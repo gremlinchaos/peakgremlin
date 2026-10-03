@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <title>Peak Gremlin</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --ink: #111111;
+      --mute: #666666;
+      --sub: #e60000;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    body {
+      overflow-x: hidden;
+      overflow-y: hidden;
+      font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body.is-live {
+      overflow-x: auto;
+    }
+
+    /* ——— opening: footage bg + still framed like meetings ——— */
+    .intro {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      padding: clamp(12px, 4vw, 48px);
+      background: transparent;
+      cursor: crosshair;
+      overflow: hidden;
+    }
+
+    .intro.is-gone {
+      pointer-events: none;
+    }
+
+    .intro-frame {
+      position: relative;
+      width: min(42vh, 420px);
+      max-width: min(88vw, 420px);
+    }
+
+    .intro-glitch {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      background: #111;
+    }
+
+    .intro-glitch img {
+      display: block;
+      width: 100%;
+      height: auto;
+      vertical-align: top;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .intro-glitch::before,
+    .intro-glitch::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("./001_STILLS/peakgremlin_still_20261002_124838.jpg") center / 100% 100% no-repeat;
+      opacity: 0;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .intro.is-glitching .intro-glitch::before {
+      opacity: 0.85;
+      transform: translate(var(--gx, 4px), calc(var(--gy, 0px) * 0.3));
+      filter: drop-shadow(-3px 0 #ff003c) saturate(1.4);
+      clip-path: inset(var(--c1, 10%) 0 var(--c2, 55%) 0);
+    }
+
+    .intro.is-glitching .intro-glitch::after {
+      opacity: 0.75;
+      transform: translate(calc(var(--gx, 4px) * -1), calc(var(--gy, 0px) * -0.2));
+      filter: drop-shadow(3px 0 #00f0ff) hue-rotate(20deg);
+      clip-path: inset(var(--c3, 40%) 0 var(--c4, 20%) 0);
+      mix-blend-mode: lighten;
+    }
+
+    .intro.is-glitching .intro-glitch img {
+      filter: contrast(1.15) saturate(1.2);
+      transform: translate(calc(var(--gx, 0px) * 0.15), calc(var(--gy, 0px) * 0.1));
+      animation: intro-shake 0.08s steps(2) infinite;
+    }
+
+    .intro-title {
+      position: absolute;
+      left: 6%;
+      right: 28%;
+      top: 7%;
+      margin: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-weight: 700;
+      font-size: clamp(42px, 9vh, 78px);
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      color: #111;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .intro-title span {
+      display: block;
+    }
+
+    .intro.is-glitching .intro-title {
+      animation: intro-title-glitch 0.12s steps(2) infinite;
+      text-shadow:
+        -2px 0 #ff003c,
+        2px 0 #00e5ff;
+    }
+
+    .intro-scan {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.08) 0 1px,
+        transparent 1px 3px
+      );
+      mix-blend-mode: multiply;
+      z-index: 3;
+    }
+
+    .intro.is-glitching .intro-scan {
+      opacity: 0.55;
+    }
+
+    .intro-hint {
+      position: absolute;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%);
+      margin: 0;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.7);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+      pointer-events: none;
+    }
+
+    .intro.is-glitching .intro-hint {
+      opacity: 0;
+    }
+
+    @keyframes intro-shake {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(-2px, 1px) skewX(-0.4deg); }
+      100% { transform: translate(1px, -1px); }
+    }
+
+    @keyframes intro-title-glitch {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(-3px, 1px); }
+      100% { transform: translate(2px, -1px); }
+    }
+
+    .intro.is-exiting .intro-frame {
+      animation: intro-blow 0.85s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+    }
+
+    .intro.is-exiting {
+      animation: intro-exit 0.85s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+    }
+
+    @keyframes intro-exit {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes intro-blow {
+      0% { transform: scale(1) skewX(0); filter: none; opacity: 1; }
+      45% { transform: scale(1.03, 0.97) skewX(-2deg); filter: contrast(1.5) saturate(1.8); opacity: 1; }
+      100% { transform: scale(1.12) skewX(5deg); filter: blur(10px) contrast(1.8); opacity: 0; }
+    }
+
+    /* very wide scroll axis — slow left → right */
+    .scroll-track {
+      width: 3200vw;
+      height: 100vh;
+      height: 100dvh;
+      position: relative;
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      background: #111;
+    }
+
+    /* hide trail/meetings until intro ends — keep bg video visible underneath */
+    body:not(.is-live) #map,
+    body:not(.is-live) #meetings {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    body:not(.is-live) .bg-video {
+      opacity: 1;
+      filter: saturate(1.05) contrast(1.05) brightness(0.92);
+    }
+
+    .bg-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      filter: saturate(1.05) contrast(1.05);
+    }
+
+    #map {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 1;
+    }
+
+    #meetings { z-index: 2; }
+
+    .status {
+      position: fixed;
+      left: 16px;
+      top: 16px;
+      z-index: 5;
+      color: var(--mute);
+      font-size: 12px;
+    }
+    .status.error { color: #b00000; }
+
+    .meeting {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      padding: clamp(12px, 4vw, 48px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 1.4s ease;
+      background: rgba(255, 255, 255, 0);
+    }
+
+    .meeting.on {
+      opacity: 1;
+      background: rgba(8, 10, 14, 0.28);
+    }
+
+    .meeting-frame {
+      position: relative;
+      width: min(920px, 100%);
+      max-height: min(78vh, 820px);
+    }
+
+    .meeting video {
+      display: block;
+      width: 100%;
+      max-height: min(70vh, 720px);
+      object-fit: cover;
+      background: #eee;
+    }
+
+    /* old-school film subtitles */
+    .sub {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 7%;
+      margin: 0;
+      padding: 0 1rem;
+      text-align: center;
+      font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+      font-size: clamp(15px, 2.4vw, 24px);
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      line-height: 1.25;
+      color: var(--sub);
+      text-transform: uppercase;
+      text-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.85),
+        0 0 2px rgba(0, 0, 0, 0.45);
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .meeting { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <p class="status" id="status">Loading…</p>
+
+  <section class="intro" id="intro" aria-label="Peak Gremlin">
+    <div class="intro-frame">
+      <div class="intro-glitch" id="introGlitch">
+        <img
+          src="./001_STILLS/peakgremlin_still_20261002_124838.jpg"
+          alt="Peak Gremlin"
+          width="1080"
+          height="1350"
+        />
+        <p class="intro-title"><span>Peak</span><span>Grem</span></p>
+        <div class="intro-scan" aria-hidden="true"></div>
+      </div>
+    </div>
+    <p class="intro-hint">move</p>
+  </section>
+
+  <div class="scroll-track" id="scrollTrack">
+    <div class="stage">
+      <video
+        id="bgVideo"
+        class="bg-video"
+        muted
+        loop
+        playsinline
+        autoplay
+        preload="auto"
+        src="./002_MOVING_IMAGE/peakgremlin_movingimage_20261002_152601.mov"
+      ></video>
+      <canvas id="map"></canvas>
+      <div id="meetings"></div>
+    </div>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as THREE from "three";
+
+    const statusEl = document.getElementById("status");
+    const meetingsEl = document.getElementById("meetings");
+    const canvas = document.getElementById("map");
+    const introEl = document.getElementById("intro");
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let path = [];
+    let assets = [];
+    let meetings = [];
+    let progress = 0;
+    let target = 0;
+    let speedN = 0;
+    let isLive = false;
+    let introArmed = false;
+
+    // Opening still → glitch → pour experience
+    (function setupIntro() {
+      if (!introEl) return;
+      let moved = 0;
+      let lastX = null;
+      let lastY = null;
+      let exiting = false;
+      let glitchTimer = 0;
+
+      const randSlice = () => {
+        const a = Math.random() * 70;
+        const b = Math.random() * (90 - a);
+        const c = Math.random() * 60;
+        const d = Math.random() * (80 - c);
+        introEl.style.setProperty("--c1", `${a}%`);
+        introEl.style.setProperty("--c2", `${b}%`);
+        introEl.style.setProperty("--c3", `${c}%`);
+        introEl.style.setProperty("--c4", `${d}%`);
+      };
+
+      const enterExperience = () => {
+        if (exiting) return;
+        exiting = true;
+        introEl.classList.add("is-glitching", "is-exiting", "is-gone");
+        document.body.classList.add("is-live");
+        isLive = true;
+        // kick media that was waiting
+        bgVideo?.play?.().catch(() => {});
+        if (meetings[0]) meetings[0].video.play().catch(() => {});
+        setTimeout(() => {
+          introEl.remove();
+        }, 900);
+      };
+
+      const onMove = (clientX, clientY) => {
+        if (exiting) return;
+        if (lastX == null) {
+          lastX = clientX;
+          lastY = clientY;
+          return;
+        }
+        const dx = clientX - lastX;
+        const dy = clientY - lastY;
+        lastX = clientX;
+        lastY = clientY;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 0.4) return;
+
+        moved += dist;
+        introEl.classList.add("is-glitching");
+        introEl.style.setProperty("--gx", `${(dx * 0.35).toFixed(1)}px`);
+        introEl.style.setProperty("--gy", `${(dy * 0.35).toFixed(1)}px`);
+        if (performance.now() - glitchTimer > 40) {
+          glitchTimer = performance.now();
+          randSlice();
+        }
+
+        // enough motion → tear into the live experience
+        if (moved > (reduced ? 40 : 90)) enterExperience();
+      };
+
+      introEl.addEventListener("pointermove", (e) => onMove(e.clientX, e.clientY), { passive: true });
+      introEl.addEventListener("touchmove", (e) => {
+        const t = e.touches[0];
+        if (t) onMove(t.clientX, t.clientY);
+      }, { passive: true });
+      // click / tap also works if they don't move much
+      introEl.addEventListener("click", () => {
+        introEl.classList.add("is-glitching");
+        randSlice();
+        setTimeout(enterExperience, reduced ? 0 : 180);
+      });
+
+      introArmed = true;
+      // hide loader on intro (experience can keep loading underneath)
+      if (statusEl) statusEl.hidden = true;
+      // start footage behind the framed still
+      const bootBg = document.getElementById("bgVideo");
+      if (bootBg) {
+        bootBg.muted = true;
+        bootBg.playsInline = true;
+        bootBg.play().catch(() => {});
+      }
+    })();
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1a1e24);
+
+    const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 20000);
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.4;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+    const sun = new THREE.DirectionalLight(0xfff6e8, 2.4);
+    sun.position.set(40, 120, 80);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.bias = -0.00035;
+    sun.shadow.normalBias = 0.05;
+    sun.shadow.camera.near = 1;
+    sun.shadow.camera.far = 400;
+    sun.shadow.camera.left = -90;
+    sun.shadow.camera.right = 90;
+    sun.shadow.camera.top = 90;
+    sun.shadow.camera.bottom = -90;
+    scene.add(sun);
+    const fill = new THREE.DirectionalLight(0xb8d0ff, 0.9);
+    fill.position.set(-80, 40, 60);
+    scene.add(fill);
+    const kick = new THREE.DirectionalLight(0xffffff, 1.2);
+    kick.position.set(20, 30, 100);
+    scene.add(kick);
+
+    const bgVideo = document.getElementById("bgVideo");
+    let videoTex = null;
+    let pmrem = null;
+    let envRT = null;
+    let bgPlane = null;
+
+    let silverMat = null;
+    let groundMat = null;
+    let markers = [];
+    let curve = null;
+    let liquidMesh = null;
+    let groundMesh = null;
+    let pourTip = null;
+    let pourStream = null;
+    let tubularSegs = 600;
+    let radialSegs = 36;
+    let groundY = 0;
+    let lastProgress = 0;
+    let pourCarry = 0;
+    const drips = [];
+    const MAX_DRIPS = 70;
+    let scaleXZ = 0.08;
+    let scaleY = 0.18;
+    const POUR_SPAN = 240;
+    const camPos = new THREE.Vector3();
+    const look = new THREE.Vector3();
+    const _tip = new THREE.Vector3();
+    const _tmp = new THREE.Vector3();
+    let lastT = performance.now();
+    let lastEnvRefresh = 0;
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+
+    function samplePath(p) {
+      if (!path.length) return null;
+      const max = path.length - 1;
+      const f = clamp(p, 0, 1) * max;
+      const i = Math.floor(f);
+      const j = Math.min(i + 1, max);
+      const t = f - i;
+      const a = path[i];
+      const b = path[j];
+      const hrA = a.hr ?? null;
+      const hrB = b.hr ?? null;
+      let hr = null;
+      if (hrA != null && hrB != null) hr = Math.round(lerp(hrA, hrB, t));
+      else hr = hrA ?? hrB;
+      return {
+        x: lerp(a.x, b.x, t),
+        y: lerp(a.y, b.y, t),
+        z: lerp(a.z, b.z, t),
+        ele: lerp(a.ele, b.ele, t),
+        speed: lerp(a.speed, b.speed, t),
+        spdN: lerp(a.spdN, b.spdN, t),
+        eleN: lerp(a.eleN, b.eleN, t),
+        dist: lerp(a.dist, b.dist, t),
+        hr,
+      };
+    }
+
+    function makeLiquidTube(curve, tubularSegments, radialSegments) {
+      // Viscous mercury: heavy pools, thin strands, sagging underside
+      const frames = curve.computeFrenetFrames(tubularSegments, false);
+      const positions = [];
+      const normals = [];
+      const uvs = [];
+      const indices = [];
+
+      for (let i = 0; i <= tubularSegments; i++) {
+        const u = i / tubularSegments;
+        const p = curve.getPointAt(u);
+        const N = frames.normals[i];
+        const B = frames.binormals[i];
+
+        // soft organic drift in the pour plane only (avoid corkscrew torsion)
+        const wander =
+          Math.sin(u * Math.PI * 4.0) * 0.55 +
+          Math.sin(u * Math.PI * 11.0 + 1.1) * 0.25;
+        const sagY =
+          -Math.abs(Math.sin(u * Math.PI * 5.5)) * 0.85 +
+          Math.sin(u * Math.PI * 13.0) * 0.25;
+        p.y += sagY + wander * 0.35;
+        p.z += wander * 0.2;
+
+        // skinny filaments + occasional soft beads (not thick sausage)
+        const bead = Math.pow(0.5 + 0.5 * Math.sin(u * Math.PI * 7.5 + 0.4), 3.4);
+        const bead2 = Math.pow(Math.max(0, Math.sin(u * Math.PI * 18.0 + 1.3)), 4.0);
+        const r =
+          0.12 +
+          bead * 0.55 +
+          bead2 * 0.4 +
+          0.06 * Math.sin(u * Math.PI * 31.0) +
+          0.04 * Math.sin(u * Math.PI * 53.0);
+        const radius = Math.max(0.07, r);
+
+        for (let j = 0; j <= radialSegments; j++) {
+          const v = (j / radialSegments) * Math.PI * 2;
+          const bump =
+            1 +
+            0.22 * Math.sin(v * 2.0 + u * 22.0) +
+            0.14 * Math.sin(v * 5.0 - u * 11.0) +
+            0.08 * Math.sin(v * 9.0 + u * 4.0);
+          const cx = -Math.cos(v);
+          const cy = Math.sin(v);
+          const normal = new THREE.Vector3()
+            .copy(N).multiplyScalar(cx)
+            .addScaledVector(B, cy)
+            .normalize();
+          // gravity pull — heavier on the bottom of the tube
+          const gravityBulge = cy < 0 ? 1 + (-cy) * 0.45 : 1 - cy * 0.08;
+          const vertex = new THREE.Vector3()
+            .copy(p)
+            .addScaledVector(normal, radius * bump * gravityBulge);
+          positions.push(vertex.x, vertex.y, vertex.z);
+          normals.push(normal.x, normal.y, normal.z);
+          uvs.push(u, j / radialSegments);
+        }
+      }
+
+      for (let i = 0; i < tubularSegments; i++) {
+        for (let j = 0; j < radialSegments; j++) {
+          const a = (radialSegments + 1) * i + j;
+          const b = (radialSegments + 1) * (i + 1) + j;
+          const c = (radialSegments + 1) * (i + 1) + (j + 1);
+          const d = (radialSegments + 1) * i + (j + 1);
+          indices.push(a, b, d, b, c, d);
+        }
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+      geo.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
+      geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+      geo.setIndex(indices);
+      geo.computeVertexNormals();
+      return geo;
+    }
+
+    function refreshVideoEnv() {
+      if (!videoTex || !pmrem) return;
+      const tmp = new THREE.Scene();
+      tmp.background = new THREE.Color(0xc5d4e6); // bright sky fill so metal stays silver
+      // video on inside of sphere → chrome reflects the real footage
+      const ball = new THREE.Mesh(
+        new THREE.SphereGeometry(12, 48, 32),
+        new THREE.MeshBasicMaterial({ map: videoTex, side: THREE.BackSide })
+      );
+      tmp.add(ball);
+      // bright studio cards — without these, dark rocks make chrome go black
+      const card = (x, y, z, w, h, c) => {
+        const m = new THREE.Mesh(
+          new THREE.PlaneGeometry(w, h),
+          new THREE.MeshBasicMaterial({ color: c })
+        );
+        m.position.set(x, y, z);
+        m.lookAt(0, 0, 0);
+        tmp.add(m);
+        return m;
+      };
+      card(6, 7, 4, 5, 4, 0xffffff);
+      card(-5, 5, 3, 3.5, 5, 0xe8f0ff);
+      card(2, 9, -3, 6, 2.5, 0xfff5dd);
+      tmp.add(new THREE.AmbientLight(0xffffff, 1.1));
+      const a = new THREE.DirectionalLight(0xffffff, 4.5);
+      a.position.set(5, 8, 3);
+      tmp.add(a);
+
+      const next = pmrem.fromScene(tmp, 0.03);
+      if (envRT) envRT.dispose();
+      envRT = next;
+      scene.environment = envRT.texture;
+      if (silverMat) {
+        silverMat.envMap = envRT.texture;
+        silverMat.envMapIntensity = 2.6;
+        silverMat.needsUpdate = true;
+      }
+      ball.geometry.dispose();
+      ball.material.dispose();
+    }
+
+    function makeChromeMaterial() {
+      pmrem = new THREE.PMREMGenerator(renderer);
+      videoTex = new THREE.VideoTexture(bgVideo);
+      videoTex.colorSpace = THREE.SRGBColorSpace;
+      videoTex.minFilter = THREE.LinearFilter;
+      videoTex.magFilter = THREE.LinearFilter;
+
+      // full-frame video plane so the footage is the world (not grey void)
+      bgPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(2, 2),
+        new THREE.MeshBasicMaterial({ map: videoTex, depthTest: false, depthWrite: false })
+      );
+      bgPlane.renderOrder = -1000;
+      bgPlane.frustumCulled = false;
+      bgPlane.onBeforeRender = (r, s, cam) => {
+        // pin to camera as a backdrop
+        bgPlane.position.copy(cam.position);
+        bgPlane.quaternion.copy(cam.quaternion);
+        bgPlane.translateZ(-80);
+        const h = 2 * Math.tan(THREE.MathUtils.degToRad(cam.fov * 0.5)) * 80;
+        const w = h * cam.aspect;
+        bgPlane.scale.set(w, h, 1);
+      };
+      scene.add(bgPlane);
+
+      refreshVideoEnv();
+
+      return new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        metalness: 1,
+        roughness: 0.04,
+        envMap: scene.environment,
+        envMapIntensity: 2.6,
+        clearcoat: 1,
+        clearcoatRoughness: 0.03,
+        reflectivity: 1,
+        ior: 1.8,
+      });
+    }
+
+    function layoutPourPoints() {
+      // Remap GPX → left→right pour that starts high and falls with gravity
+      const n = path.length;
+      const pts = [];
+      for (let i = 0; i < n; i++) {
+        const t = i / Math.max(1, n - 1);
+        const p = path[i];
+        const x = t * POUR_SPAN;
+        // begin high on the left, pour down; elevation adds soft hills later
+        const y =
+          72 -
+          t * 42 +
+          (p.eleN - 0.5) * 16 +
+          Math.sin(t * Math.PI * 2.2) * 2.4 +
+          Math.sin(t * Math.PI * 6.5) * 1.0;
+        // keep nearly flat in Z so L→R + gravity read clearly
+        const z = Math.sin(t * Math.PI * 2.0) * 1.8;
+        pts.push(new THREE.Vector3(x, y, z));
+      }
+      return pts;
+    }
+
+    function spawnDrip(origin, force = 1) {
+      if (drips.length >= MAX_DRIPS) {
+        const old = drips.shift();
+        scene.remove(old.mesh);
+        old.mesh.geometry.dispose();
+      }
+      const s = 0.12 + Math.random() * 0.38 * force;
+      const geo = new THREE.SphereGeometry(s, 14, 12);
+      // stretch into a tear while falling
+      const mesh = new THREE.Mesh(geo, silverMat);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.position.copy(origin);
+      mesh.position.x += (Math.random() - 0.5) * 0.6;
+      mesh.position.z += (Math.random() - 0.5) * 0.6;
+      mesh.position.y += 0.2 + Math.random() * 0.8;
+      mesh.scale.set(1, 1.35 + Math.random() * 0.8, 1);
+      scene.add(mesh);
+      drips.push({
+        mesh,
+        vel: new THREE.Vector3(
+          1.2 * force + (Math.random() - 0.3) * 1.5, // carry right with the pour
+          -4 - Math.random() * 6 * force,            // hard fall
+          (Math.random() - 0.5) * 1.4
+        ),
+        life: 2.8 + Math.random() * 2.2,
+        age: 0,
+        radius: s,
+        settled: false,
+      });
+    }
+
+    function updatePour(dt) {
+      if (!curve || !liquidMesh) return;
+
+      const u = clamp(progress, 0.001, 0.999);
+      // reveal trail as if poured up to here
+      const segs = Math.max(12, Math.floor(u * tubularSegs));
+      liquidMesh.geometry.setDrawRange(0, segs * radialSegs * 6);
+
+      curve.getPointAt(u, _tip);
+      const tan = curve.getTangentAt(u).normalize();
+
+      // keep soft contact shadows glued to the pour tip
+      sun.position.set(_tip.x + 55, _tip.y + 110, _tip.z + 40);
+      sun.target.position.copy(_tip);
+      sun.target.updateMatrixWorld();
+
+      if (pourTip) {
+        pourTip.position.copy(_tip);
+        pourTip.position.y += 0.55;
+        const pulse = 0.9 + Math.sin(performance.now() * 0.014) * 0.25;
+        pourTip.scale.set(pulse * 1.1, pulse * 0.85, pulse * 1.1);
+      }
+      if (pourStream) {
+        // long drip hanging straight down from tip
+        pourStream.position.copy(_tip);
+        pourStream.position.y -= 1.1;
+        const flow = 1.2 + Math.min(3.2, Math.abs(progress - lastProgress) * 160);
+        pourStream.scale.set(0.55, flow * 2.8, 0.55);
+      }
+
+      // spawn drips when moving forward (pouring)
+      const dProg = progress - lastProgress;
+      if (dProg > 0.00001) {
+        pourCarry += dProg * (reduced ? 80 : 420);
+        while (pourCarry > 1) {
+          pourCarry -= 1;
+          _tmp.copy(_tip).addScaledVector(tan, -0.2);
+          _tmp.y += 0.6;
+          spawnDrip(_tmp, 0.9 + Math.min(1.8, dProg * 500));
+        }
+        if (Math.random() < dProg * 14) spawnDrip(_tip, 1.6);
+      } else if (!reduced && Math.random() < 0.03) {
+        spawnDrip(_tip, 0.55);
+      }
+      lastProgress = progress;
+
+      // integrate drips
+      for (let i = drips.length - 1; i >= 0; i--) {
+        const d = drips[i];
+        d.age += dt;
+        if (d.settled) {
+          d.life -= dt;
+          d.mesh.scale.multiplyScalar(0.985);
+          if (d.life <= 0 || d.mesh.scale.x < 0.08) {
+            scene.remove(d.mesh);
+            d.mesh.geometry.dispose();
+            drips.splice(i, 1);
+          }
+          continue;
+        }
+
+        d.vel.y -= 26 * dt; // stronger gravity
+        d.vel.x *= 1 - 0.25 * dt;
+        d.vel.z *= 1 - 0.4 * dt;
+        d.mesh.position.addScaledVector(d.vel, dt);
+
+        // elongate while falling fast
+        const stretch = 1 + Math.min(1.8, Math.abs(d.vel.y) * 0.06);
+        d.mesh.scale.set(1 / Math.sqrt(stretch), stretch, 1 / Math.sqrt(stretch));
+
+        // hit ground → splat into a flat mercury puddle with a lingering shadow blob
+        if (d.mesh.position.y - d.radius * 0.5 <= groundY) {
+          d.mesh.position.y = groundY + d.radius * 0.12;
+          d.vel.set(d.vel.x * 0.25, 0, d.vel.z * 0.25);
+          d.mesh.scale.set(2.2 + Math.random() * 1.2, 0.22, 2.2 + Math.random() * 1.2);
+          d.settled = true;
+          d.life = 2.4 + Math.random() * 2.0;
+        } else if (d.age > 5) {
+          scene.remove(d.mesh);
+          d.mesh.geometry.dispose();
+          drips.splice(i, 1);
+        }
+      }
+    }
+
+    function buildTrail() {
+      const points = layoutPourPoints();
+      curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.18);
+
+      tubularSegs = Math.min(1200, Math.max(560, points.length * 3));
+      radialSegs = 56;
+      const geo = makeLiquidTube(curve, tubularSegs, radialSegs);
+
+      silverMat = makeChromeMaterial();
+      liquidMesh = new THREE.Mesh(geo, silverMat);
+      liquidMesh.castShadow = true;
+      liquidMesh.receiveShadow = true;
+      liquidMesh.geometry.setDrawRange(0, 6);
+      scene.add(liquidMesh);
+
+      let minY = Infinity;
+      for (const p of points) minY = Math.min(minY, p.y);
+      groundY = minY - 4;
+
+      // invisible shadow catcher — video stays visible underneath
+      groundMat = new THREE.ShadowMaterial({ opacity: 0.45 });
+      groundMesh = new THREE.Mesh(new THREE.PlaneGeometry(POUR_SPAN * 1.6, 120), groundMat);
+      groundMesh.rotation.x = -Math.PI / 2;
+      groundMesh.position.set(POUR_SPAN * 0.5, groundY, 0);
+      groundMesh.receiveShadow = true;
+      scene.add(groundMesh);
+
+      // pour tip + hanging stream (starts high, drips down)
+      pourTip = new THREE.Mesh(new THREE.SphereGeometry(0.48, 28, 24), silverMat);
+      pourTip.castShadow = true;
+      scene.add(pourTip);
+      pourStream = new THREE.Mesh(new THREE.SphereGeometry(0.16, 18, 14), silverMat);
+      pourStream.castShadow = true;
+      scene.add(pourStream);
+
+      sun.target.position.set(POUR_SPAN * 0.5, 20, 0);
+      scene.add(sun.target);
+
+      markers = assets.map((a) => {
+        const u = clamp(a.progress, 0.001, 0.999);
+        const pt = curve.getPointAt(u);
+        const mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(0.55 + Math.random() * 0.55, 24, 20),
+          silverMat
+        );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.copy(pt);
+        mesh.position.y -= 0.2;
+        mesh.scale.set(1.25, 0.65, 1.25);
+        scene.add(mesh);
+        return { mesh, progress: a.progress };
+      });
+    }
+
+    function updateCamera() {
+      if (!curve) return;
+      const u = clamp(progress, 0.001, 0.999);
+      const p = curve.getPointAt(u);
+
+      const here = samplePath(progress);
+      speedN = here?.spdN ?? 0;
+
+      // framed L→R: tip mid-left, stream falling down + running right
+      const desiredPos = new THREE.Vector3(p.x + 18, p.y + 6, 55);
+      const desiredLook = new THREE.Vector3(p.x + 6, p.y - 8, 0);
+
+      const ease = reduced ? 1 : 0.05;
+      camPos.lerp(desiredPos, ease);
+      look.lerp(desiredLook, ease);
+      camera.position.copy(camPos);
+      camera.lookAt(look);
+
+      markers.forEach((m) => {
+        const poured = m.progress <= progress + 0.01;
+        m.mesh.visible = poured;
+        if (poured) {
+          const near = Math.abs(m.progress - progress) < 0.04;
+          m.mesh.scale.set(near ? 1.5 : 1.25, near ? 0.85 : 0.65, near ? 1.5 : 1.25);
+        }
+      });
+    }
+
+    function resize() {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      camera.aspect = w / Math.max(h, 1);
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h, false);
+    }
+
+    function readScroll() {
+      const max = document.documentElement.scrollWidth - innerWidth;
+      target = max > 0 ? clamp(scrollX / max, 0, 1) : 0;
+    }
+
+    function syncMeetings() {
+      // long sticky holds — each clip owns a wide band of the journey
+      let active = -1;
+      let best = Infinity;
+      assets.forEach((a, i) => {
+        const d = Math.abs(progress - a.progress);
+        if (d < 0.07 && d < best) {
+          best = d;
+          active = i;
+        }
+      });
+
+      meetings.forEach((m, i) => {
+        const on = i === active;
+        m.el.classList.toggle("on", on);
+        if (on) {
+          const s = samplePath(progress);
+          const ele = Math.round(s?.ele ?? assets[i].ele);
+          const hr = s?.hr ?? assets[i].hr;
+          m.sub.textContent = hr != null
+            ? `${ele.toLocaleString("en-GB")} M   ·   ${hr} BPM`
+            : `${ele.toLocaleString("en-GB")} M`;
+          if (m.video.paused) m.video.play().catch(() => {});
+        } else if (!m.video.paused) {
+          m.video.pause();
+        }
+      });
+    }
+
+    function tick() {
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - lastT) / 1000);
+      lastT = now;
+
+      if (isLive) {
+        progress = lerp(progress, target, reduced ? 1 : 0.045);
+        if (Math.abs(progress - target) < 0.00002) progress = target;
+        updatePour(dt);
+        updateCamera();
+        syncMeetings();
+
+        // keep chrome reflecting the live background footage
+        if (now - lastEnvRefresh > 1800 && bgVideo.readyState >= 2) {
+          lastEnvRefresh = now;
+          refreshVideoEnv();
+        }
+      }
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(tick);
+    }
+
+    async function main() {
+      try {
+        const manifest = await fetch("./manifest.json?v=pour5").then((r) => {
+          if (!r.ok) throw new Error("manifest.json missing");
+          return r.json();
+        });
+
+        path = manifest.path || [];
+        assets = manifest.assets || [];
+
+        bgVideo.muted = true;
+        bgVideo.playsInline = true;
+        try { await bgVideo.play(); } catch (_) { /* autoplay may need a gesture */ }
+
+        buildTrail();
+
+        camPos.set(20, 60, 55);
+        look.set(8, 45, 0);
+
+        assets.forEach((a) => {
+          const el = document.createElement("div");
+          el.className = "meeting";
+          const hr = a.hr != null ? `${a.hr} BPM` : "— BPM";
+          el.innerHTML = `
+            <div class="meeting-frame">
+              <video muted loop playsinline preload="auto" src="${a.src}"></video>
+              <p class="sub">${Math.round(a.ele).toLocaleString("en-GB")} M   ·   ${hr}</p>
+            </div>
+          `;
+          meetingsEl.appendChild(el);
+          meetings.push({
+            el,
+            video: el.querySelector("video"),
+            sub: el.querySelector(".sub"),
+            progress: a.progress,
+          });
+        });
+
+        statusEl.hidden = true;
+        resize();
+        readScroll();
+
+        addEventListener("scroll", readScroll, { passive: true });
+        addEventListener("resize", resize, { passive: true });
+
+        // map wheel to slow horizontal scroll (only once live)
+        addEventListener("wheel", (e) => {
+          if (!isLive) {
+            e.preventDefault();
+            return;
+          }
+          e.preventDefault();
+          const dx = (Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * 0.22;
+          scrollBy({ left: dx, behavior: "auto" });
+        }, { passive: false });
+
+        requestAnimationFrame(tick);
+        // meetings wait for intro exit (setupIntro starts them)
+        if (isLive && meetings[0]) meetings[0].video.play().catch(() => {});
+      } catch (err) {
+        console.error(err);
+        statusEl.classList.add("error");
+        statusEl.hidden = false;
+        statusEl.textContent = err.message + " — open via http://127.0.0.1:8765/";
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>

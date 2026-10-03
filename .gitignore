@@ -1,0 +1,39 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Media / large assets (keep local only)
+001_STILLS/
+002_MOVING_IMAGE/
+003_AUDIO/
+004_COROS_FILES/
+
+# Design folder: keep SVGs, skip heavy binaries
+005_DESIGN_ASSETS/*
+!005_DESIGN_ASSETS/*.svg
+
+# Common media extensions anywhere
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.tif
+*.tiff
+*.heic
+*.mov
+*.mp4
+*.m4v
+*.avi
+*.mkv
+*.webm
+*.mp3
+*.wav
+*.aac
+*.m4a
+*.flac
+*.aiff
+*.psd
+*.ai
+*.sketch
+*.fig
