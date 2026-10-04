@@ -2,9 +2,24 @@
 .DS_Store
 Thumbs.db
 
-# Media / large assets (keep local only)
-001_STILLS/
-002_MOVING_IMAGE/
+# Local tooling / grade previews / full-res backups from compress
+.tools/
+
+# Heavy local libraries — keep ignored except the web-compressed page assets below
+001_STILLS/*
+!001_STILLS/peakgremlin_still_20261002_122245.jpg
+!001_STILLS/peakgremlin_still_20261002_123549.jpg
+!001_STILLS/peakgremlin_still_20261002_124838.jpg
+
+002_MOVING_IMAGE/*
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_141235.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_144947.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_145719.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_152601.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_152833.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_154248.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_163517.mp4
+
 003_AUDIO/
 004_COROS_FILES/
 
@@ -12,7 +27,10 @@ Thumbs.db
 005_DESIGN_ASSETS/*
 !005_DESIGN_ASSETS/*.svg
 
-# Common media extensions anywhere
+006_MUSIC/*
+!006_MUSIC/Miley Cyrus - The Climb.mp3
+
+# Common media extensions anywhere (un-ignored page assets above still win)
 *.jpg
 *.jpeg
 *.png
@@ -37,3 +55,16 @@ Thumbs.db
 *.ai
 *.sketch
 *.fig
+
+# Re-allow the compressed assets used by index.html (must follow *.ext rules)
+!001_STILLS/peakgremlin_still_20261002_122245.jpg
+!001_STILLS/peakgremlin_still_20261002_123549.jpg
+!001_STILLS/peakgremlin_still_20261002_124838.jpg
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_141235.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_144947.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_145719.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_152601.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_152833.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_154248.mp4
+!002_MOVING_IMAGE/peakgremlin_movingimage_20261002_163517.mp4
+!006_MUSIC/Miley Cyrus - The Climb.mp3

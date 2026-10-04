@@ -29,10 +29,38 @@
     }
 
     body.is-live {
-      overflow-x: auto;
+      overflow-x: hidden;
+      overflow-y: hidden;
+      cursor: none;
     }
 
-    /* ——— opening: footage bg + still framed like meetings ——— */
+    body.is-paused {
+      cursor: none;
+    }
+
+    .pause-hint {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      z-index: 30;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      padding: 0;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: clamp(13px, 2.2vw, 16px);
+      letter-spacing: 0.08em;
+      text-transform: lowercase;
+      text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 160ms ease;
+    }
+
+    body.is-paused .pause-hint {
+      opacity: 1;
+    }
+
+    /* ——— opening: footage bg + still (no type) ——— */
     .intro {
       position: fixed;
       inset: 0;
@@ -41,12 +69,59 @@
       place-items: center;
       padding: clamp(12px, 4vw, 48px);
       background: transparent;
-      cursor: crosshair;
+      cursor: none;
       overflow: hidden;
+    }
+
+    .intro,
+    .intro * {
+      cursor: none;
     }
 
     .intro.is-gone {
       pointer-events: none;
+      display: none;
+    }
+
+    /* intro: gremlinchaos wordmark pointer — red on the still, turquoise outside */
+    .grem-cursor {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 60;
+      width: min(31.45vw, 292px); /* 15% smaller than 37vw / 344px */
+      aspect-ratio: 1517 / 101;
+      background: #5afff0;
+      -webkit-mask: url("./005_DESIGN_ASSETS/logo.svg") center / contain no-repeat;
+      mask: url("./005_DESIGN_ASSETS/logo.svg") center / contain no-repeat;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55))
+              drop-shadow(0 0 1px rgba(0, 0, 0, 0.35));
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      will-change: transform, background-color, width, filter;
+      opacity: 0;
+      transition: background-color 80ms linear, opacity 120ms ease, width 180ms ease;
+    }
+
+    .grem-cursor.is-on {
+      opacity: 1;
+    }
+
+    .grem-cursor.is-over-face {
+      background: #e60000;
+    }
+
+    /* live + pause gremlin cursor only — 15% bigger, slight black outline */
+    .grem-cursor.is-live {
+      width: 63px; /* +15% from 55 */
+      aspect-ratio: 682 / 306;
+      background: #5afff0;
+      -webkit-mask: url("./005_DESIGN_ASSETS/Gremlin.svg") center / contain no-repeat;
+      mask: url("./005_DESIGN_ASSETS/Gremlin.svg") center / contain no-repeat;
+      filter: drop-shadow(0 0 0.55px #000)
+              drop-shadow(0 0 0.55px #000)
+              drop-shadow(0 0 1px rgba(0, 0, 0, 0.85))
+              drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
     }
 
     .intro-frame {
@@ -55,98 +130,20 @@
       max-width: min(88vw, 420px);
     }
 
-    .intro-glitch {
+    .intro-still {
       position: relative;
       width: 100%;
       overflow: hidden;
       background: #111;
     }
 
-    .intro-glitch img {
+    .intro-still img {
       display: block;
       width: 100%;
       height: auto;
       vertical-align: top;
       user-select: none;
       -webkit-user-drag: none;
-    }
-
-    .intro-glitch::before,
-    .intro-glitch::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: url("./001_STILLS/peakgremlin_still_20261002_124838.jpg") center / 100% 100% no-repeat;
-      opacity: 0;
-      mix-blend-mode: screen;
-      pointer-events: none;
-    }
-
-    .intro.is-glitching .intro-glitch::before {
-      opacity: 0.85;
-      transform: translate(var(--gx, 4px), calc(var(--gy, 0px) * 0.3));
-      filter: drop-shadow(-3px 0 #ff003c) saturate(1.4);
-      clip-path: inset(var(--c1, 10%) 0 var(--c2, 55%) 0);
-    }
-
-    .intro.is-glitching .intro-glitch::after {
-      opacity: 0.75;
-      transform: translate(calc(var(--gx, 4px) * -1), calc(var(--gy, 0px) * -0.2));
-      filter: drop-shadow(3px 0 #00f0ff) hue-rotate(20deg);
-      clip-path: inset(var(--c3, 40%) 0 var(--c4, 20%) 0);
-      mix-blend-mode: lighten;
-    }
-
-    .intro.is-glitching .intro-glitch img {
-      filter: contrast(1.15) saturate(1.2);
-      transform: translate(calc(var(--gx, 0px) * 0.15), calc(var(--gy, 0px) * 0.1));
-      animation: intro-shake 0.08s steps(2) infinite;
-    }
-
-    .intro-title {
-      position: absolute;
-      left: 6%;
-      right: 28%;
-      top: 7%;
-      margin: 0;
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-weight: 700;
-      font-size: clamp(42px, 9vh, 78px);
-      line-height: 0.88;
-      letter-spacing: -0.04em;
-      text-transform: uppercase;
-      color: #111;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    .intro-title span {
-      display: block;
-    }
-
-    .intro.is-glitching .intro-title {
-      animation: intro-title-glitch 0.12s steps(2) infinite;
-      text-shadow:
-        -2px 0 #ff003c,
-        2px 0 #00e5ff;
-    }
-
-    .intro-scan {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0;
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.08) 0 1px,
-        transparent 1px 3px
-      );
-      mix-blend-mode: multiply;
-      z-index: 3;
-    }
-
-    .intro.is-glitching .intro-scan {
-      opacity: 0.55;
     }
 
     .intro-hint {
@@ -163,47 +160,13 @@
       pointer-events: none;
     }
 
-    .intro.is-glitching .intro-hint {
-      opacity: 0;
-    }
-
-    @keyframes intro-shake {
-      0% { transform: translate(0, 0); }
-      50% { transform: translate(-2px, 1px) skewX(-0.4deg); }
-      100% { transform: translate(1px, -1px); }
-    }
-
-    @keyframes intro-title-glitch {
-      0% { transform: translate(0, 0); }
-      50% { transform: translate(-3px, 1px); }
-      100% { transform: translate(2px, -1px); }
-    }
-
-    .intro.is-exiting .intro-frame {
-      animation: intro-blow 0.85s cubic-bezier(0.7, 0, 0.3, 1) forwards;
-    }
-
-    .intro.is-exiting {
-      animation: intro-exit 0.85s cubic-bezier(0.7, 0, 0.3, 1) forwards;
-    }
-
-    @keyframes intro-exit {
-      0% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-
-    @keyframes intro-blow {
-      0% { transform: scale(1) skewX(0); filter: none; opacity: 1; }
-      45% { transform: scale(1.03, 0.97) skewX(-2deg); filter: contrast(1.5) saturate(1.8); opacity: 1; }
-      100% { transform: scale(1.12) skewX(5deg); filter: blur(10px) contrast(1.8); opacity: 0; }
-    }
-
-    /* very wide scroll axis — slow left → right */
+    /* page is playlist-driven — no horizontal scroll chrome */
     .scroll-track {
-      width: 3200vw;
+      width: 100vw;
       height: 100vh;
       height: 100dvh;
       position: relative;
+      overflow: hidden;
     }
 
     .stage {
@@ -244,10 +207,81 @@
       width: 100%;
       height: 100%;
       display: block;
-      z-index: 1;
+      z-index: 3;
+      background: transparent;
+      pointer-events: none;
     }
 
-    #meetings { z-index: 2; }
+    /* must sit above #map or the WebGL canvas covers every shot */
+    #meetings {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    /* BPM / elev always above metal + media; frame synced to asset bounds in JS */
+    #shotHud {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+    #shotHud.on { opacity: 1; }
+    #shotHud .meeting-frame {
+      position: absolute;
+      width: auto;
+      max-height: none;
+      margin: 0;
+    }
+    #shotHud .sub {
+      bottom: 0.55rem;
+    }
+
+    .finale-label {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2em;
+      margin: 0;
+      padding: 0 0.5rem;
+      color: var(--sub);
+      font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+      font-size: clamp(13px, 2vw, 18px);
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      line-height: 1.25;
+      text-align: center;
+      text-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.85),
+        0 0 2px rgba(0, 0, 0, 0.45);
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, 0.45rem);
+      transition: opacity 0.35s ease;
+    }
+    .finale-label.on { opacity: 1; }
+    .finale-line {
+      display: block;
+      opacity: 0;
+      white-space: nowrap;
+      text-transform: uppercase;
+      transition: opacity 0.18s ease;
+    }
+    .finale-line.on { opacity: 1; }
+    .finale-line.is-ital {
+      font-style: italic;
+      text-transform: none;
+      letter-spacing: 0.06em;
+      font-size: 0.95em;
+      color: #5afff0;
+    }
 
     .status {
       position: fixed;
@@ -268,35 +302,47 @@
       padding: clamp(12px, 4vw, 48px);
       opacity: 0;
       pointer-events: none;
-      transition: opacity 1.4s ease;
+      transition: opacity 0.8s ease, background-color 0.8s ease;
       background: rgba(255, 255, 255, 0);
     }
 
     .meeting.on {
       opacity: 1;
-      background: rgba(8, 10, 14, 0.28);
+      background: rgba(8, 10, 14, 0.12);
     }
 
     .meeting-frame {
       position: relative;
-      width: min(920px, 100%);
-      max-height: min(78vh, 820px);
+      width: min(782px, 100%);
+      max-height: min(66vh, 697px);
     }
 
     .meeting video {
       display: block;
       width: 100%;
-      max-height: min(70vh, 720px);
+      max-height: min(60vh, 612px);
       object-fit: cover;
       background: #eee;
     }
 
-    /* old-school film subtitles */
+    .meeting img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: min(60vh, 612px);
+      object-fit: contain;
+      background: transparent;
+    }
+
+    /* per-meeting sub sits under metal; live copy is #shotHud */
+    .meeting .sub { visibility: hidden; }
+
+    /* old-school film subtitles — pinned to bottom of the overlay asset */
     .sub {
       position: absolute;
       left: 0;
       right: 0;
-      bottom: 7%;
+      bottom: 0.55rem;
       margin: 0;
       padding: 0 1rem;
       text-align: center;
@@ -313,9 +359,6 @@
       pointer-events: none;
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      .meeting { transition: none; }
-    }
   </style>
 </head>
 <body>
@@ -323,19 +366,18 @@
 
   <section class="intro" id="intro" aria-label="Peak Gremlin">
     <div class="intro-frame">
-      <div class="intro-glitch" id="introGlitch">
+      <div class="intro-still">
         <img
           src="./001_STILLS/peakgremlin_still_20261002_124838.jpg"
           alt="Peak Gremlin"
           width="1080"
           height="1350"
         />
-        <p class="intro-title"><span>Peak</span><span>Grem</span></p>
-        <div class="intro-scan" aria-hidden="true"></div>
       </div>
     </div>
-    <p class="intro-hint">move</p>
+    <p class="intro-hint">click</p>
   </section>
+  <div class="grem-cursor" id="gremCursor" aria-hidden="true"></div>
 
   <div class="scroll-track" id="scrollTrack">
     <div class="stage">
@@ -347,12 +389,27 @@
         playsinline
         autoplay
         preload="auto"
-        src="./002_MOVING_IMAGE/peakgremlin_movingimage_20261002_152601.mov"
+        src="./002_MOVING_IMAGE/peakgremlin_movingimage_20261002_152601.mp4"
       ></video>
-      <canvas id="map"></canvas>
       <div id="meetings"></div>
+      <canvas id="map"></canvas>
+      <div id="shotHud" aria-hidden="true">
+        <div class="meeting-frame">
+          <p class="sub" id="shotSub"></p>
+        </div>
+      </div>
+      <div class="finale-label" id="finaleLabel" aria-hidden="true">
+        <span class="finale-line" id="finaleLine1">lagazuoi</span>
+        <span class="finale-line is-ital" id="finaleLine2">with love x</span>
+      </div>
+      <audio
+        id="climbAudio"
+        preload="auto"
+        src="./006_MUSIC/Miley%20Cyrus%20-%20The%20Climb.mp3"
+      ></audio>
     </div>
   </div>
+  <p class="pause-hint" id="pauseHint" hidden>paused · click to play</p>
 
   <script type="importmap">
     {
@@ -366,96 +423,157 @@
 
     const statusEl = document.getElementById("status");
     const meetingsEl = document.getElementById("meetings");
+    const shotHud = document.getElementById("shotHud");
+    const shotSub = document.getElementById("shotSub");
+    const shotHudFrame = shotHud?.querySelector(".meeting-frame") || null;
+    const finaleLabel = document.getElementById("finaleLabel");
+    const finaleLine1 = document.getElementById("finaleLine1");
+    const finaleLine2 = document.getElementById("finaleLine2");
     const canvas = document.getElementById("map");
+    const stageEl = canvas?.parentElement || null;
     const introEl = document.getElementById("intro");
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     let path = [];
     let assets = [];
     let meetings = [];
+    // timed shot playlist: full clip → 2s cut gap → next
+    // Pour progress is driven by this playlist so the metal always finishes with the last shot.
+    // along-trail order — trail: "front" = metal over media, "behind" = metal under media
+    const SHOT_PLAYLIST = [
+      { file: "peakgremlin_movingimage_20261002_141235.mp4", trail: "behind" },
+      { file: "peakgremlin_still_20261002_122245.jpg", trail: "front" },
+      { file: "peakgremlin_still_20261002_123549.jpg", trail: "behind" },
+      { file: "peakgremlin_movingimage_20261002_144947.mp4", trail: "front" },
+      { file: "peakgremlin_movingimage_20261002_145719.mp4", trail: "behind" },
+      // lock song speed after this clip (end push) through finale
+      { file: "peakgremlin_movingimage_20261002_152833.mp4", trail: "front", lockTempoAfter: true },
+      { file: "peakgremlin_movingimage_20261002_154248.mp4", trail: "behind" },
+      { file: "peakgremlin_movingimage_20261002_163517.mp4", trail: "front", subEnd: true },
+    ];
+    const SHOT_FILES = SHOT_PLAYLIST.map((s) => s.file);
+    const SHOT_GAP_MS = 2000; // fallback if music not playing
+    const SHOT_GAP_BEATS = 2; // black gap ≈ 2 beats (~1.5s at 78bpm)
+    // extra black before 163517 so the last clip lands a beat later (−50ms tweak)
+    const SHOT_LAST_EXTRA_GAP_MS = 1950;
+    const SHOT_FALLBACK_DUR = 12; // seconds if metadata not ready
+    const SHOT_STILL_DUR = 6; // stills sit ~6s then beat-cut like clips
+    const SHOT_FADE_MS = 800; // match .meeting / #shotHud fade transition
+    // The Climb beat grid (file timeline) — overlay cuts snap here when possible
+    const CLIMB_BPM = 78.4;
+    const CLIMB_BEAT0 = 1.545; // trimmed file (was 2.383 before cutting ~0.84s lead-in)
+    const CLIMB_BEAT = 60 / CLIMB_BPM;
+    let shotIndex = -1;
+    let shotTimer = 0;
+    let shotPhase = "idle"; // idle | waitFirst | playing | fadingOut | gap | done
+    let shotFadeThen = null; // "gap" | "finale" after fade-out
+    // The Climb — starts with GREM PEAK write; BPM nudges from first overlay
+    const climbAudio = document.getElementById("climbAudio");
+    const CLIMB_START_DELAY = 0.2; // seconds after click-in before audio plays
+    // fallback if gap length unknown — real ease spans the empty black before last shot
+    const CLIMB_NORMAL_EASE_S = 2.4;
+    // trimmed file: hold ~11s past the first verse+chorus cut, then fade
+    const CLIMB_CUT_AT = 85.05;
+    const CLIMB_OUTRO_FADE_S = 1.8;
+    const MODE_BPM = 140; // normal song speed/pitch baseline
+    let climbTempoLive = false;
+    let climbTempoLocked = false; // freeze rate after late still through penultimate
+    let climbLockedRate = 1;
+    let climbRate = 1;
+    let climbStarted = false;
+    let climbOutro = false;
+    let climbEaseActive = false; // wall-clock ease to 1× in the empty gap
+    let climbEaseFrom = 1;
+    let climbEaseT = 0; // 0→1 over climbEaseDur
+    let climbEaseDur = CLIMB_NORMAL_EASE_S;
+    let hrViz = 0.5; // smoothed 0..1 — low BPM → 0 (far/small), high → 1 (close/big)
     let progress = 0;
     let target = 0;
     let speedN = 0;
     let isLive = false;
-    let introArmed = false;
+    let experiencePaused = false;
+    let pauseClimbWasPlaying = false;
+    let pauseBgWasPlaying = false;
+    let pauseArmedAt = 0; // ignore the enter-click that starts the experience
+    // intro (still only) → text (metal writes PEAK GREM) → hike (GPX)
+    let phase = "intro";
+    let textProgress = 0;
+    let textCurve = null;
+    let hikeCurve = null;
+    let textMesh = null;
+    let hikeMesh = null;
+    let textTubular = 400;
+    let hikeTubular = 600;
+    let beginHikeAt = 0;
+    let hikeSideSign = 1;
+    let hikeAutoPour = false;
+    let textExit = 0; // 0→1: PEAK GREM slides off left after trail takes over
+    let finale = false;
+    let finaleT = 0;
+    let finaleCaptionStep = 0; // 0 map → 1 lagazuoi → 2 with love x
+    let finaleCaptionTimer = 0;
+    const trailCenter = new THREE.Vector3();
+    const trailPeak = new THREE.Vector3(); // highest point on the poured route
+    let trailSpan = 80;
+    let trailSpanXZ = 80;
 
-    // Opening still → glitch → pour experience
+    // Tiny turquoise gremlin cursor — red over the intro still, stays for the live page
     (function setupIntro() {
       if (!introEl) return;
-      let moved = 0;
-      let lastX = null;
-      let lastY = null;
       let exiting = false;
-      let glitchTimer = 0;
+      const cursorEl = document.getElementById("gremCursor");
+      const faceEl = introEl.querySelector(".intro-still");
+      let overFace = false;
 
-      const randSlice = () => {
-        const a = Math.random() * 70;
-        const b = Math.random() * (90 - a);
-        const c = Math.random() * 60;
-        const d = Math.random() * (80 - c);
-        introEl.style.setProperty("--c1", `${a}%`);
-        introEl.style.setProperty("--c2", `${b}%`);
-        introEl.style.setProperty("--c3", `${c}%`);
-        introEl.style.setProperty("--c4", `${d}%`);
+      const moveCursor = (clientX, clientY) => {
+        if (!cursorEl) return;
+        cursorEl.style.transform = `translate(${clientX}px, ${clientY}px) translate(-50%, -50%)`;
+        cursorEl.classList.add("is-on");
+        if (!exiting && faceEl) {
+          const r = faceEl.getBoundingClientRect();
+          overFace =
+            clientX >= r.left &&
+            clientX <= r.right &&
+            clientY >= r.top &&
+            clientY <= r.bottom;
+          cursorEl.classList.toggle("is-over-face", overFace);
+        }
       };
 
       const enterExperience = () => {
         if (exiting) return;
         exiting = true;
-        introEl.classList.add("is-glitching", "is-exiting", "is-gone");
+        introEl.classList.add("is-gone");
+        introEl.remove();
         document.body.classList.add("is-live");
         isLive = true;
-        // kick media that was waiting
+        pauseArmedAt = performance.now() + 500;
+        if (cursorEl) {
+          cursorEl.classList.remove("is-over-face");
+          cursorEl.classList.add("is-live"); // swap logo → tiny turquoise gremlin
+        }
+        startTextPhase();
         bgVideo?.play?.().catch(() => {});
-        if (meetings[0]) meetings[0].video.play().catch(() => {});
-        setTimeout(() => {
-          introEl.remove();
-        }, 900);
       };
 
-      const onMove = (clientX, clientY) => {
-        if (exiting) return;
-        if (lastX == null) {
-          lastX = clientX;
-          lastY = clientY;
-          return;
-        }
-        const dx = clientX - lastX;
-        const dy = clientY - lastY;
-        lastX = clientX;
-        lastY = clientY;
-        const dist = Math.hypot(dx, dy);
-        if (dist < 0.4) return;
-
-        moved += dist;
-        introEl.classList.add("is-glitching");
-        introEl.style.setProperty("--gx", `${(dx * 0.35).toFixed(1)}px`);
-        introEl.style.setProperty("--gy", `${(dy * 0.35).toFixed(1)}px`);
-        if (performance.now() - glitchTimer > 40) {
-          glitchTimer = performance.now();
-          randSlice();
-        }
-
-        // enough motion → tear into the live experience
-        if (moved > (reduced ? 40 : 90)) enterExperience();
-      };
-
-      introEl.addEventListener("pointermove", (e) => onMove(e.clientX, e.clientY), { passive: true });
-      introEl.addEventListener("touchmove", (e) => {
-        const t = e.touches[0];
-        if (t) onMove(t.clientX, t.clientY);
+      // track on the window so the gremlin stays after intro is removed
+      addEventListener("pointermove", (e) => {
+        moveCursor(e.clientX, e.clientY);
       }, { passive: true });
-      // click / tap also works if they don't move much
-      introEl.addEventListener("click", () => {
-        introEl.classList.add("is-glitching");
-        randSlice();
-        setTimeout(enterExperience, reduced ? 0 : 180);
+      addEventListener("touchmove", (e) => {
+        const t = e.touches?.[0];
+        if (t) moveCursor(t.clientX, t.clientY);
+      }, { passive: true });
+
+      introEl.addEventListener("click", (e) => {
+        moveCursor(e.clientX, e.clientY);
+        // only begin when the gremlin is red (over the still)
+        if (!overFace || exiting) return;
+        e.stopPropagation();
+        enterExperience();
       });
 
-      introArmed = true;
-      // hide loader on intro (experience can keep loading underneath)
       if (statusEl) statusEl.hidden = true;
-      // start footage behind the framed still
       const bootBg = document.getElementById("bgVideo");
       if (bootBg) {
         bootBg.muted = true;
@@ -465,37 +583,50 @@
     })();
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a1e24);
+    // transparent so video shows through and ShadowMaterial trail/drip shadows read clearly
+    scene.background = null;
 
     const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 20000);
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, preserveDrawingBuffer: true });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+    renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.4;
+    renderer.toneMappingExposure = 1.55;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
-    const sun = new THREE.DirectionalLight(0xfff6e8, 2.4);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.22));
+    // hard sun — hot specular hits where the trail faces the light
+    const sun = new THREE.DirectionalLight(0xfff1d6, 3.2);
+    const sunBaseIntensity = 3.2;
     sun.position.set(40, 120, 80);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.bias = -0.00035;
-    sun.shadow.normalBias = 0.05;
+    sun.shadow.bias = -0.0002;
+    sun.shadow.normalBias = 0.04;
+    sun.shadow.radius = 2.5;
     sun.shadow.camera.near = 1;
-    sun.shadow.camera.far = 400;
-    sun.shadow.camera.left = -90;
-    sun.shadow.camera.right = 90;
-    sun.shadow.camera.top = 90;
-    sun.shadow.camera.bottom = -90;
+    sun.shadow.camera.far = 520;
+    sun.shadow.camera.left = -110;
+    sun.shadow.camera.right = 110;
+    sun.shadow.camera.top = 110;
+    sun.shadow.camera.bottom = -110;
     scene.add(sun);
-    const fill = new THREE.DirectionalLight(0xb8d0ff, 0.9);
+    const fill = new THREE.DirectionalLight(0xb8d0ff, 0.4);
+    const fillBaseIntensity = 0.4;
     fill.position.set(-80, 40, 60);
     scene.add(fill);
-    const kick = new THREE.DirectionalLight(0xffffff, 1.2);
+    const kick = new THREE.DirectionalLight(0xffffff, 1.6);
+    const kickBaseIntensity = 1.6;
     kick.position.set(20, 30, 100);
     scene.add(kick);
+    // rim glint — helps sunlit stretches; shade stays duller via sunlit attribute
+    const glint = new THREE.DirectionalLight(0xfffaf0, 1.5);
+    const glintBaseIntensity = 1.5;
+    glint.position.set(-30, 90, -40);
+    scene.add(glint);
+    scene.add(glint.target);
 
     const bgVideo = document.getElementById("bgVideo");
     let videoTex = null;
@@ -509,6 +640,7 @@
     let curve = null;
     let liquidMesh = null;
     let groundMesh = null;
+    let textGround = null;
     let pourTip = null;
     let pourStream = null;
     let tubularSegs = 600;
@@ -517,10 +649,9 @@
     let lastProgress = 0;
     let pourCarry = 0;
     const drips = [];
-    const MAX_DRIPS = 70;
+    const MAX_DRIPS = 56;
     let scaleXZ = 0.08;
     let scaleY = 0.18;
-    const POUR_SPAN = 240;
     const camPos = new THREE.Vector3();
     const look = new THREE.Vector3();
     const _tip = new THREE.Vector3();
@@ -558,12 +689,554 @@
       };
     }
 
-    function makeLiquidTube(curve, tubularSegments, radialSegments) {
+    // Filenames are local time (UTC+2), same as build-manifest.py
+    const LOCAL_OFFSET_MS = 2 * 60 * 60 * 1000;
+
+    function fileLocalToUtcMs(file) {
+      const m = file.match(/(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/);
+      if (!m) return null;
+      const asIfUtc = Date.parse(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`);
+      if (Number.isNaN(asIfUtc)) return null;
+      return asIfUtc - LOCAL_OFFSET_MS;
+    }
+
+    /** Prefer local filename clock; if outside the GPX window, try UTC so media still lands on trail. */
+    function fileTimeOnTrailMs(file) {
+      const m = file.match(/(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/);
+      if (!m || !path.length) return fileLocalToUtcMs(file);
+      const asIfUtc = Date.parse(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`);
+      if (Number.isNaN(asIfUtc)) return null;
+      const localMs = asIfUtc - LOCAL_OFFSET_MS;
+      const t0 = Date.parse(path[0].t);
+      const tN = Date.parse(path[path.length - 1].t);
+      if (localMs >= t0 && localMs <= tN) return localMs;
+      if (asIfUtc >= t0 && asIfUtc <= tN) return asIfUtc;
+      // nearest in-window time (keeps early/late stills on the route)
+      if (localMs < t0 && asIfUtc < t0) return t0;
+      if (localMs > tN && asIfUtc > tN) return tN;
+      return Math.abs(localMs - t0) < Math.abs(asIfUtc - t0) ? localMs : asIfUtc;
+    }
+
+    function pathProgressForTime(ms) {
+      if (!path.length) return 0;
+      let best = 0;
+      let bestD = Infinity;
+      for (let i = 0; i < path.length; i++) {
+        const d = Math.abs(Date.parse(path[i].t) - ms);
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      }
+      return best / Math.max(1, path.length - 1);
+    }
+
+    function samplePathAtTime(ms) {
+      if (!path.length) return null;
+      const t0 = Date.parse(path[0].t);
+      const tN = Date.parse(path[path.length - 1].t);
+      if (ms <= t0) return samplePath(0);
+      if (ms >= tN) return samplePath(1);
+
+      let lo = 0;
+      let hi = path.length - 1;
+      while (hi - lo > 1) {
+        const mid = (lo + hi) >> 1;
+        if (Date.parse(path[mid].t) <= ms) lo = mid;
+        else hi = mid;
+      }
+      const a = path[lo];
+      const b = path[hi];
+      const ta = Date.parse(a.t);
+      const tb = Date.parse(b.t);
+      const u = tb === ta ? 0 : clamp((ms - ta) / (tb - ta), 0, 1);
+      const hrA = a.hr ?? null;
+      const hrB = b.hr ?? null;
+      let hr = null;
+      if (hrA != null && hrB != null) hr = Math.round(lerp(hrA, hrB, u));
+      else hr = hrA ?? hrB;
+      return {
+        ele: lerp(a.ele, b.ele, u),
+        speed: lerp(a.speed, b.speed, u),
+        spdN: lerp(a.spdN, b.spdN, u),
+        eleN: lerp(a.eleN, b.eleN, u),
+        dist: lerp(a.dist, b.dist, u),
+        hr,
+        progress: (lo + u) / Math.max(1, path.length - 1),
+      };
+    }
+
+    function formatSub(ele, hr, { end = false } = {}) {
+      const e = Math.round(ele).toLocaleString("en-GB");
+      if (end) return `${e} M   ·   END`;
+      return hr != null ? `${e} M   ·   ${hr} BPM` : `${e} M`;
+    }
+
+    function applyClimbPitchLink() {
+      if (!climbAudio) return;
+      // while tempo-warped: pitch follows rate; at 1× restore original file pitch
+      const warped = climbTempoLive || climbTempoLocked || climbEaseActive;
+      try { climbAudio.preservesPitch = !warped; } catch (_) { /* ignore */ }
+      try { climbAudio.mozPreservesPitch = !warped; } catch (_) { /* ignore */ }
+      try { climbAudio.webkitPreservesPitch = !warped; } catch (_) { /* ignore */ }
+    }
+
+    function startClimbAudio() {
+      if (!climbAudio || climbStarted) return;
+      climbStarted = true;
+      climbOutro = false;
+      climbEaseActive = false;
+      climbEaseFrom = 1;
+      climbEaseT = 0;
+      climbEaseDur = CLIMB_NORMAL_EASE_S;
+      climbRate = 1;
+      try { climbAudio.playbackRate = 1; } catch (_) { /* ignore */ }
+      applyClimbPitchLink();
+      try { climbAudio.volume = 1; } catch (_) { /* ignore */ }
+      try { climbAudio.loop = false; } catch (_) { /* ignore */ }
+      const play = () => {
+        try { climbAudio.currentTime = 0; } catch (_) { /* ignore */ }
+        const p = climbAudio.play();
+        if (p && p.catch) p.catch(() => {});
+      };
+      if (climbAudio.readyState >= 1) play();
+      else climbAudio.addEventListener("loadedmetadata", play, { once: true });
+    }
+
+    function setExperiencePaused(next) {
+      if (!isLive || experiencePaused === next) return;
+      experiencePaused = next;
+      document.body.classList.toggle("is-paused", experiencePaused);
+      const hint = document.getElementById("pauseHint");
+      if (hint) hint.hidden = !experiencePaused;
+
+      if (experiencePaused) {
+        pauseClimbWasPlaying = !!(climbAudio && !climbAudio.paused && climbStarted);
+        pauseBgWasPlaying = !!(bgVideo && !bgVideo.paused);
+        try { climbAudio?.pause?.(); } catch (_) { /* ignore */ }
+        try { bgVideo?.pause?.(); } catch (_) { /* ignore */ }
+        meetings.forEach((m) => {
+          if (m.kind === "still") {
+            m._wasPlaying = !!(shotPhase === "playing" && meetings[shotIndex] === m);
+          } else {
+            m._wasPlaying = !!(m.video && !m.video.paused);
+            try { m.video?.pause?.(); } catch (_) { /* ignore */ }
+          }
+        });
+      } else {
+        if (pauseClimbWasPlaying && climbAudio) {
+          const p = climbAudio.play();
+          if (p && p.catch) p.catch(() => {});
+        }
+        if (pauseBgWasPlaying && bgVideo) {
+          const p = bgVideo.play();
+          if (p && p.catch) p.catch(() => {});
+        }
+        meetings.forEach((m, idx) => {
+          if (m._wasPlaying && shotPhase === "playing" && shotIndex === idx) {
+            if (m.kind !== "still" && m.video) {
+              const p = m.video.play();
+              if (p && p.catch) p.catch(() => {});
+            }
+          }
+          m._wasPlaying = false;
+        });
+        pauseClimbWasPlaying = false;
+        pauseBgWasPlaying = false;
+        lastT = performance.now(); // avoid a huge dt jump on resume
+      }
+    }
+
+    function toggleExperiencePause() {
+      setExperiencePaused(!experiencePaused);
+    }
+
+    function climbMediaTime() {
+      if (!climbAudio || climbAudio.paused || !climbStarted) return null;
+      const t = climbAudio.currentTime;
+      return Number.isFinite(t) ? t : null;
+    }
+
+    /** Next beat (or every `everyN` beats) at/after song time `afterT`. */
+    function nextClimbBeat(afterT, everyN = 1) {
+      const step = CLIMB_BEAT * Math.max(1, everyN);
+      if (afterT <= CLIMB_BEAT0) return CLIMB_BEAT0;
+      const k = Math.ceil((afterT - CLIMB_BEAT0) / step - 1e-6);
+      return CLIMB_BEAT0 + Math.max(0, k) * step;
+    }
+
+    /** Closest beat to song time `t` (previous or next). */
+    function nearestClimbBeat(t) {
+      if (t <= CLIMB_BEAT0) return CLIMB_BEAT0;
+      const k = Math.round((t - CLIMB_BEAT0) / CLIMB_BEAT);
+      return CLIMB_BEAT0 + Math.max(0, k) * CLIMB_BEAT;
+    }
+
+    /** Wall-clock ms until the next beat lands (accounts for playbackRate). */
+    function msUntilClimbBeat(everyN = 1, minMs = 60) {
+      const t = climbMediaTime();
+      if (t == null) return Math.max(minMs, SHOT_GAP_MS);
+      const rate = Math.max(0.5, climbAudio.playbackRate || 1);
+      const target = nextClimbBeat(t + 0.03, everyN);
+      return Math.max(minMs, ((target - t) / rate) * 1000);
+    }
+
+    /**
+     * Wall-clock ms until the closest beat.
+     * If that beat already passed (we snapped backward), cut ASAP.
+     */
+    function msUntilClosestClimbBeat(minMs = 40) {
+      const t = climbMediaTime();
+      if (t == null) return Math.max(minMs, 320);
+      const rate = Math.max(0.5, climbAudio.playbackRate || 1);
+      const nearest = nearestClimbBeat(t);
+      if (nearest <= t + 0.015) return minMs;
+      return Math.max(minMs, ((nearest - t) / rate) * 1000);
+    }
+
+    /** Wait at least `minBeats`, then land on a beat (for gaps → next overlay in). */
+    function msUntilClimbBeatAfterBeats(minBeats, minMs = 80) {
+      const t = climbMediaTime();
+      if (t == null) return Math.max(minMs, msForClimbBeats(minBeats));
+      const rate = Math.max(0.5, climbAudio.playbackRate || 1);
+      const target = nextClimbBeat(t + CLIMB_BEAT * Math.max(0, minBeats) + 0.02, 1);
+      return Math.max(minMs, ((target - t) / rate) * 1000);
+    }
+
+    function msForClimbBeats(n) {
+      const rate = Math.max(0.5, climbAudio?.playbackRate || 1);
+      if (!climbStarted || climbAudio?.paused) return SHOT_GAP_MS;
+      return Math.max(120, ((CLIMB_BEAT * n) / rate) * 1000);
+    }
+
+    function currentHrForTempo() {
+      if (phase === "hike" && shotPhase === "playing" && shotIndex >= 0) {
+        const m = meetings[shotIndex];
+        if (m) {
+          const t = m.startMs + shotTime(m) * 1000;
+          const s = samplePathAtTime(t);
+          if (s?.hr != null) return s.hr;
+        }
+      }
+      const s = samplePath(clamp(progress, 0, 1));
+      return s?.hr ?? null;
+    }
+
+    /** 0 = low heart-rate (far/small trail), 1 = high (close/big). */
+    function hrProximityN() {
+      const hr = currentHrForTempo();
+      if (hr == null || !Number.isFinite(hr)) return 0.5;
+      // ~90 → 0, MODE_BPM (140) → ~0.5, ~190 → 1
+      return clamp((hr - 90) / 100, 0, 1);
+    }
+
+    function targetClimbRate(hr) {
+      if (hr == null || !Number.isFinite(hr)) return 1;
+      const delta = hr - MODE_BPM;
+      // 140 BPM ±2 → normal speed/pitch
+      if (Math.abs(delta) <= 2) return 1;
+      const excess = delta > 0 ? delta - 2 : delta + 2;
+      // ~±50 BPM beyond deadzone spans toward 0.5x / 1.8x (pitch follows rate)
+      return clamp(1 + (excess / 50) * 0.8, 0.5, 1.8);
+    }
+
+    function resetClimbToNormal() {
+      climbTempoLive = false;
+      climbTempoLocked = false;
+      climbLockedRate = 1;
+      climbRate = 1;
+      climbOutro = false;
+      climbEaseActive = false;
+      climbEaseFrom = 1;
+      climbEaseT = 0;
+      climbEaseDur = CLIMB_NORMAL_EASE_S;
+      if (!climbAudio) return;
+      try { climbAudio.playbackRate = 1; } catch (_) { /* ignore */ }
+      applyClimbPitchLink();
+      try { climbAudio.volume = 1; } catch (_) { /* ignore */ }
+      try { climbAudio.loop = false; } catch (_) { /* ignore */ }
+    }
+
+    function beginClimbOutro() {
+      if (climbOutro || !climbAudio) return;
+      climbOutro = true;
+      climbTempoLive = false;
+      try { climbAudio.loop = false; } catch (_) { /* ignore */ }
+    }
+
+    /** On the map: stop before "troubles/struggles I'm facing"; if already past, end now. */
+    function watchClimbMapCut() {
+      if (!finale || climbOutro || !climbAudio || !climbStarted) return;
+      const t = climbAudio.currentTime;
+      if (!Number.isFinite(t)) return;
+      if (t >= CLIMB_CUT_AT - 0.04) beginClimbOutro();
+    }
+
+    function tickClimbOutro(dt) {
+      if (!climbOutro || !climbAudio) return;
+      if (climbAudio.paused && (climbAudio.volume || 0) <= 0.02) return;
+      const v = Math.max(0, (climbAudio.volume ?? 1) - dt / CLIMB_OUTRO_FADE_S);
+      try { climbAudio.volume = v; } catch (_) { /* ignore */ }
+      if (v <= 0.02) {
+        try { climbAudio.volume = 0; } catch (_) { /* ignore */ }
+        try { climbAudio.pause(); } catch (_) { /* ignore */ }
+      }
+    }
+
+    function lockClimbTempoAtCurrent() {
+      const rate = Math.max(
+        0.5,
+        climbAudio?.playbackRate || climbRate || 1
+      );
+      climbTempoLocked = true;
+      climbLockedRate = rate;
+      climbRate = rate;
+      climbTempoLive = true;
+      applyClimbPitchLink();
+      try { if (climbAudio) climbAudio.playbackRate = rate; } catch (_) { /* ignore */ }
+    }
+
+    /** Back to 1× — keep playing, stop HR drive. */
+    function restoreClimbNormalPace() {
+      climbTempoLocked = false;
+      climbLockedRate = 1;
+      climbRate = 1;
+      climbTempoLive = false;
+      climbEaseActive = false;
+      climbEaseT = 0;
+      climbEaseDur = CLIMB_NORMAL_EASE_S;
+      if (!climbAudio) return;
+      try { climbAudio.playbackRate = 1; } catch (_) { /* ignore */ }
+      applyClimbPitchLink(); // original download pitch at 1×
+    }
+
+    /**
+     * Ease back to 1× during the empty gap before the last overlay.
+     * `easeS` = wall-clock seconds (usually the full gap) so the last
+     * image lands already at original pace/pitch — no slide on screen.
+     */
+    function beginClimbNormalEaseNow(easeS) {
+      if (climbEaseActive) return;
+      const from = Math.max(
+        0.5,
+        climbAudio?.playbackRate || climbLockedRate || climbRate || 1
+      );
+      if (!climbAudio || Math.abs(from - 1) < 0.015) {
+        restoreClimbNormalPace();
+        return;
+      }
+      climbEaseFrom = from;
+      climbEaseT = 0;
+      // finish just before the gap ends so showShot hears a settled 1×
+      const gapS = Number.isFinite(easeS) ? easeS : CLIMB_NORMAL_EASE_S;
+      climbEaseDur = Math.max(0.45, gapS - 0.08);
+      climbEaseActive = true;
+      climbTempoLocked = false;
+      climbTempoLive = false;
+      climbRate = from;
+      applyClimbPitchLink();
+      try { climbAudio.playbackRate = from; } catch (_) { /* ignore */ }
+    }
+
+    function tickClimbNormalEase(dt) {
+      if (!climbEaseActive || !climbAudio) return;
+      applyClimbPitchLink();
+      const dur = Math.max(0.2, climbEaseDur || CLIMB_NORMAL_EASE_S);
+      climbEaseT = Math.min(1, climbEaseT + dt / dur);
+      const s = climbEaseT * climbEaseT * (3 - 2 * climbEaseT); // smoothstep
+      const rate = lerp(climbEaseFrom, 1, s);
+      climbRate = rate;
+      try { climbAudio.playbackRate = rate; } catch (_) { /* ignore */ }
+      if (climbEaseT >= 1) restoreClimbNormalPace();
+    }
+
+    function updateClimbTempo(dt) {
+      if (!climbAudio || climbAudio.paused || climbOutro) return;
+      if (climbEaseActive) {
+        tickClimbNormalEase(dt);
+        return;
+      }
+      applyClimbPitchLink();
+      // after the late still — hold the pushed pace until the empty gap before last
+      if (climbTempoLocked) {
+        if (Math.abs(climbAudio.playbackRate - climbLockedRate) > 0.002) {
+          try { climbAudio.playbackRate = climbLockedRate; } catch (_) { /* ignore */ }
+        }
+        return;
+      }
+      if (!climbTempoLive || finale) return;
+      const want = targetClimbRate(currentHrForTempo());
+      climbRate = lerp(climbRate, want, reduced ? 1 : 1 - Math.exp(-dt * 1.6));
+      if (Math.abs(climbAudio.playbackRate - climbRate) > 0.002) {
+        try { climbAudio.playbackRate = climbRate; } catch (_) { /* ignore */ }
+      }
+    }
+
+    function isStillFile(file) {
+      return /\.(jpe?g|png|webp)$/i.test(file || "");
+    }
+
+    function fileStem(file) {
+      return String(file || "").replace(/\.[^.]+$/, "").toLowerCase();
+    }
+
+    function shotMetaFromFile(file, trail = "front", extras = {}) {
+      // match manifest by exact name or stem (graded .mp4 vs old .mov entries)
+      const stem = fileStem(file);
+      const fromManifest =
+        assets.find((a) => a.file === file) ||
+        assets.find((a) => fileStem(a.file) === stem);
+      const still = isStillFile(file);
+      // stills often sit outside the GPX local window — map onto the trail
+      const startMs = still
+        ? fileTimeOnTrailMs(file)
+        : fromManifest?.time
+          ? Date.parse(fromManifest.time)
+          : fileLocalToUtcMs(file);
+      const s = startMs != null ? samplePathAtTime(startMs) : null;
+      // always prefer the playlist filename on disk (mp4), not a stale manifest .mov
+      const src = still ? `001_STILLS/${file}` : `002_MOVING_IMAGE/${file}`;
+      return {
+        file,
+        kind: still ? "still" : "video",
+        trail: trail === "behind" ? "behind" : "front",
+        lockTempoAfter: !!extras.lockTempoAfter,
+        subEnd: !!extras.subEnd,
+        src,
+        startMs: startMs ?? Date.parse(path[0]?.t || 0),
+        progress:
+          (still ? s?.progress : fromManifest?.progress ?? s?.progress) ??
+          pathProgressForTime(startMs ?? 0),
+        ele: (still ? s?.ele : fromManifest?.ele ?? s?.ele) ?? 0,
+        hr: (still ? s?.hr : fromManifest?.hr ?? s?.hr) ?? null,
+      };
+    }
+
+    function shotDuration(m) {
+      if (!m) return SHOT_FALLBACK_DUR;
+      if (m.kind === "still") return m.stillDur || SHOT_STILL_DUR;
+      const d = m.video?.duration;
+      return d && isFinite(d) && d > 0.2 ? d : SHOT_FALLBACK_DUR;
+    }
+
+    function shotTime(m) {
+      if (!m) return 0;
+      if (m.kind === "still") return m.stillT || 0;
+      return m.video?.currentTime || 0;
+    }
+
+    function pauseShotMedia(m) {
+      if (!m) return;
+      if (m.kind === "still") return;
+      try { m.video?.pause?.(); } catch (_) { /* ignore */ }
+    }
+
+    function resetShotMedia(m) {
+      if (!m) return;
+      if (m.kind === "still") {
+        m.stillT = 0;
+        return;
+      }
+      try { m.video.currentTime = 0; } catch (_) { /* ignore */ }
+    }
+
+    // Sun vector in scene space (+X west after route mirror, +Y up, +Z south)
+    function sunDirectionScene(ms, lat, lon) {
+      const rad = Math.PI / 180;
+      const date = new Date(ms);
+      const yearStart = Date.UTC(date.getUTCFullYear(), 0, 0);
+      const day = (ms - yearStart) / 86400000;
+      const decl = 23.44 * Math.sin(rad * (360 / 365.25) * (day - 81));
+      const utcHours =
+        date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600;
+      const ha = (utcHours + lon / 15 - 12) * 15; // hour angle, deg
+      const latR = lat * rad;
+      const decR = decl * rad;
+      const haR = ha * rad;
+      const sinEl =
+        Math.sin(latR) * Math.sin(decR) +
+        Math.cos(latR) * Math.cos(decR) * Math.cos(haR);
+      const el = Math.asin(clamp(sinEl, -1, 1));
+      const cosEl = Math.max(Math.cos(el), 1e-4);
+      const sinAz = (-Math.cos(decR) * Math.sin(haR)) / cosEl;
+      const cosAz =
+        (Math.sin(decR) * Math.cos(latR) -
+          Math.cos(decR) * Math.sin(latR) * Math.cos(haR)) /
+        cosEl;
+      const az = Math.atan2(sinAz, cosAz); // from north, toward east
+      const E = Math.sin(az) * Math.cos(el);
+      const N = Math.cos(az) * Math.cos(el);
+      const U = Math.sin(el);
+      return new THREE.Vector3(-E, U, -N).normalize();
+    }
+
+    // 0 = deep shade (matte), 1 = full sun glint — from GPX time + terrain aspect
+    function computeTrailSunlit(hikePts) {
+      const n = Math.min(hikePts.length, path.length);
+      const raw = new Float32Array(n);
+      const up = new THREE.Vector3(0, 1, 0);
+      const tangent = new THREE.Vector3();
+      const normal = new THREE.Vector3();
+      for (let i = 0; i < n; i++) {
+        const i0 = Math.max(0, i - 2);
+        const i1 = Math.min(n - 1, i + 2);
+        tangent.subVectors(hikePts[i1], hikePts[i0]);
+        if (tangent.lengthSq() < 1e-8) {
+          raw[i] = 0.45;
+          continue;
+        }
+        tangent.normalize();
+        // path-aligned terrain normal (skyward)
+        normal.crossVectors(tangent, up).cross(tangent).normalize();
+        if (normal.y < 0) normal.negate();
+        const sun = sunDirectionScene(
+          Date.parse(path[i].t),
+          path[i].lat,
+          path[i].lon
+        );
+        // face sun = lit; facing away / low sun = shade
+        let lit = normal.dot(sun);
+        // afternoon Dolomites: soften the transition, keep a shade floor
+        lit = clamp(lit, -0.25, 1);
+        const sunH = clamp(sun.y, 0, 1); // low sun → longer shade
+        raw[i] = clamp(0.13 + Math.pow(Math.max(0, lit), 1.05) * (0.55 + 0.45 * sunH), 0.12, 1);
+      }
+      // smooth so shine patches feel like weather, not noise
+      const out = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        let s = 0;
+        let w = 0;
+        for (let k = -5; k <= 5; k++) {
+          const j = clamp(i + k, 0, n - 1);
+          const ww = 1 / (1 + Math.abs(k) * 0.65);
+          s += raw[j] * ww;
+          w += ww;
+        }
+        out[i] = s / w;
+      }
+      return out;
+    }
+
+    function sampleSunlit(u, samples) {
+      if (!samples?.length) return 1;
+      const f = clamp(u, 0, 1) * (samples.length - 1);
+      const i = Math.floor(f);
+      const j = Math.min(i + 1, samples.length - 1);
+      const t = f - i;
+      return samples[i] * (1 - t) + samples[j] * t;
+    }
+
+    function makeLiquidTube(curve, tubularSegments, radialSegments, opts = {}) {
       // Viscous mercury: heavy pools, thin strands, sagging underside
+      const forLetters = !!opts.forLetters;
+      // faithful = keep GPX shape readable (map-like finale), still a little liquid
+      const faithful = !!opts.faithful;
+      const sunlitSamples = opts.sunlitSamples || null;
       const frames = curve.computeFrenetFrames(tubularSegments, false);
       const positions = [];
       const normals = [];
       const uvs = [];
+      const sunlits = [];
       const indices = [];
 
       for (let i = 0; i <= tubularSegments; i++) {
@@ -571,35 +1244,38 @@
         const p = curve.getPointAt(u);
         const N = frames.normals[i];
         const B = frames.binormals[i];
+        const sunlit = forLetters ? 1 : sampleSunlit(u, sunlitSamples);
 
-        // soft organic drift in the pour plane only (avoid corkscrew torsion)
+        // soft organic drift — lighter on letterforms / faithful hike so the route reads
+        const wanderAmp = forLetters ? 0.12 : (faithful ? 0.06 : 0.55);
         const wander =
-          Math.sin(u * Math.PI * 4.0) * 0.55 +
-          Math.sin(u * Math.PI * 11.0 + 1.1) * 0.25;
-        const sagY =
-          -Math.abs(Math.sin(u * Math.PI * 5.5)) * 0.85 +
-          Math.sin(u * Math.PI * 13.0) * 0.25;
-        p.y += sagY + wander * 0.35;
-        p.z += wander * 0.2;
+          Math.sin(u * Math.PI * 4.0) * wanderAmp +
+          Math.sin(u * Math.PI * 11.0 + 1.1) * (wanderAmp * 0.45);
+        const sagY = forLetters
+          ? -Math.abs(Math.sin(u * Math.PI * 8.0)) * 0.12
+          : faithful
+            ? -Math.abs(Math.sin(u * Math.PI * 6.0)) * 0.18
+            : -Math.abs(Math.sin(u * Math.PI * 5.5)) * 0.85 + Math.sin(u * Math.PI * 13.0) * 0.25;
+        p.y += sagY + wander * (faithful ? 0.12 : 0.35);
+        p.z += wander * (forLetters ? 0.08 : (faithful ? 0.04 : 0.2));
 
-        // skinny filaments + occasional soft beads (not thick sausage)
         const bead = Math.pow(0.5 + 0.5 * Math.sin(u * Math.PI * 7.5 + 0.4), 3.4);
         const bead2 = Math.pow(Math.max(0, Math.sin(u * Math.PI * 18.0 + 1.3)), 4.0);
-        const r =
-          0.12 +
-          bead * 0.55 +
-          bead2 * 0.4 +
-          0.06 * Math.sin(u * Math.PI * 31.0) +
-          0.04 * Math.sin(u * Math.PI * 53.0);
-        const radius = Math.max(0.07, r);
+        const r = forLetters
+          ? 0.32 + bead * 0.08
+          : faithful
+            ? 0.34 + bead * 0.1 + bead2 * 0.06
+            : 0.12 + bead * 0.55 + bead2 * 0.4 + 0.06 * Math.sin(u * Math.PI * 31.0) + 0.04 * Math.sin(u * Math.PI * 53.0);
+        const radius = Math.max(forLetters ? 0.26 : (faithful ? 0.28 : 0.07), r);
 
         for (let j = 0; j <= radialSegments; j++) {
           const v = (j / radialSegments) * Math.PI * 2;
-          const bump =
-            1 +
-            0.22 * Math.sin(v * 2.0 + u * 22.0) +
-            0.14 * Math.sin(v * 5.0 - u * 11.0) +
-            0.08 * Math.sin(v * 9.0 + u * 4.0);
+          const bump = faithful
+            ? 1 + 0.08 * Math.sin(v * 3.0 + u * 10.0)
+            : 1 +
+              0.22 * Math.sin(v * 2.0 + u * 22.0) +
+              0.14 * Math.sin(v * 5.0 - u * 11.0) +
+              0.08 * Math.sin(v * 9.0 + u * 4.0);
           const cx = -Math.cos(v);
           const cy = Math.sin(v);
           const normal = new THREE.Vector3()
@@ -607,13 +1283,16 @@
             .addScaledVector(B, cy)
             .normalize();
           // gravity pull — heavier on the bottom of the tube
-          const gravityBulge = cy < 0 ? 1 + (-cy) * 0.45 : 1 - cy * 0.08;
+          const gravityBulge = faithful
+            ? (cy < 0 ? 1 + (-cy) * 0.18 : 1)
+            : (cy < 0 ? 1 + (-cy) * 0.45 : 1 - cy * 0.08);
           const vertex = new THREE.Vector3()
             .copy(p)
             .addScaledVector(normal, radius * bump * gravityBulge);
           positions.push(vertex.x, vertex.y, vertex.z);
           normals.push(normal.x, normal.y, normal.z);
           uvs.push(u, j / radialSegments);
+          sunlits.push(sunlit);
         }
       }
 
@@ -631,6 +1310,7 @@
       geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
       geo.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
       geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+      geo.setAttribute("sunlit", new THREE.Float32BufferAttribute(sunlits, 1));
       geo.setIndex(indices);
       geo.computeVertexNormals();
       return geo;
@@ -639,14 +1319,14 @@
     function refreshVideoEnv() {
       if (!videoTex || !pmrem) return;
       const tmp = new THREE.Scene();
-      tmp.background = new THREE.Color(0xc5d4e6); // bright sky fill so metal stays silver
+      tmp.background = new THREE.Color(0xd8e6f4); // bright sky fill so metal stays silver
       // video on inside of sphere → chrome reflects the real footage
       const ball = new THREE.Mesh(
         new THREE.SphereGeometry(12, 48, 32),
         new THREE.MeshBasicMaterial({ map: videoTex, side: THREE.BackSide })
       );
       tmp.add(ball);
-      // bright studio cards — without these, dark rocks make chrome go black
+      // bright studio cards + sun disc — without these, dark rocks make chrome go black
       const card = (x, y, z, w, h, c) => {
         const m = new THREE.Mesh(
           new THREE.PlaneGeometry(w, h),
@@ -657,25 +1337,65 @@
         tmp.add(m);
         return m;
       };
-      card(6, 7, 4, 5, 4, 0xffffff);
-      card(-5, 5, 3, 3.5, 5, 0xe8f0ff);
-      card(2, 9, -3, 6, 2.5, 0xfff5dd);
-      tmp.add(new THREE.AmbientLight(0xffffff, 1.1));
-      const a = new THREE.DirectionalLight(0xffffff, 4.5);
-      a.position.set(5, 8, 3);
+      card(6, 7, 4, 5.5, 4.5, 0xffffff);
+      card(-5, 5, 3, 4, 5.5, 0xf2f7ff);
+      card(2, 9, -3, 7, 3, 0xfff8e6);
+      // hot sun reflection blob in the env
+      const sunDisc = new THREE.Mesh(
+        new THREE.SphereGeometry(1.4, 24, 16),
+        new THREE.MeshBasicMaterial({ color: 0xfff4c8 })
+      );
+      sunDisc.position.set(7, 9, 5);
+      tmp.add(sunDisc);
+      tmp.add(new THREE.AmbientLight(0xffffff, 1.35));
+      const a = new THREE.DirectionalLight(0xfff6e0, 7.5);
+      a.position.set(6, 10, 4);
       tmp.add(a);
 
-      const next = pmrem.fromScene(tmp, 0.03);
+      const next = pmrem.fromScene(tmp, 0.02);
       if (envRT) envRT.dispose();
       envRT = next;
       scene.environment = envRT.texture;
-      if (silverMat) {
-        silverMat.envMap = envRT.texture;
-        silverMat.envMapIntensity = 2.6;
-        silverMat.needsUpdate = true;
-      }
+        if (silverMat) {
+          silverMat.envMap = envRT.texture;
+          applyChromeLook();
+        }
       ball.geometry.dispose();
       ball.material.dispose();
+    }
+
+    function applyChromeLook() {
+      if (!silverMat) return;
+      // punchy mirror chrome for wordmark write + finale map
+      const hero = finale || phase === "text";
+      if (hero) {
+        silverMat.color.setHex(0xffffff);
+        silverMat.roughness = 0.002;
+        silverMat.envMapIntensity = 6.4;
+        silverMat.clearcoat = 1;
+        silverMat.clearcoatRoughness = 0.001;
+        silverMat.specularIntensity = 2.5;
+        silverMat.ior = 2.4;
+        if (silverMat.userData.uFinale) silverMat.userData.uFinale.value = 1;
+        sun.intensity = sunBaseIntensity * 1.35;
+        fill.intensity = fillBaseIntensity * 1.45;
+        kick.intensity = kickBaseIntensity * 1.55;
+        glint.intensity = glintBaseIntensity * 1.7;
+      } else {
+        silverMat.color.setHex(0xf7f9fc);
+        silverMat.roughness = 0.012;
+        silverMat.envMapIntensity = 3.8;
+        silverMat.clearcoat = 1;
+        silverMat.clearcoatRoughness = 0.01;
+        silverMat.specularIntensity = 1.4;
+        silverMat.ior = 2.2;
+        if (silverMat.userData.uFinale) silverMat.userData.uFinale.value = 0;
+        sun.intensity = sunBaseIntensity;
+        fill.intensity = fillBaseIntensity;
+        kick.intensity = kickBaseIntensity;
+        glint.intensity = glintBaseIntensity;
+      }
+      silverMat.needsUpdate = true;
     }
 
     function makeChromeMaterial() {
@@ -705,39 +1425,556 @@
 
       refreshVideoEnv();
 
-      return new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: 0xf7f9fc,
         metalness: 1,
-        roughness: 0.04,
+        roughness: 0.012,
         envMap: scene.environment,
-        envMapIntensity: 2.6,
+        envMapIntensity: 3.8,
         clearcoat: 1,
-        clearcoatRoughness: 0.03,
+        clearcoatRoughness: 0.01,
         reflectivity: 1,
-        ior: 1.8,
+        ior: 2.2,
+        specularIntensity: 1.4,
+      });
+      mat.userData.uFinale = { value: 0 };
+
+      // Per-vertex sunlit: full chrome in the sun, duller metal in shade
+      mat.onBeforeCompile = (shader) => {
+        shader.uniforms.uFinale = mat.userData.uFinale;
+        shader.vertexShader = shader.vertexShader
+          .replace(
+            "#include <common>",
+            `#include <common>
+attribute float sunlit;
+varying float vSunlit;`
+          )
+          .replace(
+            "#include <begin_vertex>",
+            `#include <begin_vertex>
+vSunlit = sunlit;`
+          );
+        shader.fragmentShader = shader.fragmentShader
+          .replace(
+            "#include <common>",
+            `#include <common>
+varying float vSunlit;
+uniform float uFinale;`
+          )
+          .replace(
+            "#include <roughnessmap_fragment>",
+            `#include <roughnessmap_fragment>
+float sunK = clamp(vSunlit, 0.0, 1.0);
+float shadeR = mix(0.32, 0.08, uFinale);
+// shade: softer, less mirror; sun: razor chrome (finale stays mirrorier)
+roughnessFactor = mix(shadeR, roughnessFactor, sunK);
+roughnessFactor = clamp(roughnessFactor, 0.002, 1.0);`
+          )
+          .replace(
+            "#include <lights_physical_fragment>",
+            `#include <lights_physical_fragment>
+float sunK2 = clamp(vSunlit, 0.0, 1.0);
+float shadeCoat = mix(0.15, 0.75, uFinale);
+float shadeCoatR = mix(0.35, 0.06, uFinale);
+material.clearcoat = mix(shadeCoat, material.clearcoat, sunK2);
+material.clearcoatRoughness = mix(shadeCoatR, material.clearcoatRoughness, sunK2);`
+          )
+          .replace(
+            "#include <color_fragment>",
+            `#include <color_fragment>
+float sunK3 = clamp(vSunlit, 0.0, 1.0);
+// shade cools/deepens; finale pushes contrast (deeper shade, hotter sun)
+vec3 shadeTint = mix(vec3(0.42, 0.46, 0.5), vec3(0.28, 0.31, 0.36), uFinale);
+vec3 sunTint = mix(vec3(1.0), vec3(1.12, 1.12, 1.14), uFinale);
+diffuseColor.rgb *= mix(shadeTint, sunTint, sunK3);`
+          );
+      };
+      mat.customProgramCacheKey = () => "chrome-sunlit-v2-finale";
+      return mat;
+    }
+
+    function layoutHikePoints() {
+      // Actual hike GPX, mirrored in X so the pour starts on the left
+      return path.map((p) => new THREE.Vector3(
+        -p.x * scaleXZ,
+        p.y * scaleY,
+        p.z * scaleXZ
+      ));
+    }
+
+    function layoutTextPoints() {
+      // Outline GREM / PEAK — shorter write path that still reads as letters
+      const W = 640;
+      const H = 360;
+      const c = document.createElement("canvas");
+      c.width = W;
+      c.height = H;
+      const g = c.getContext("2d");
+      g.fillStyle = "#000";
+      g.fillRect(0, 0, W, H);
+      g.fillStyle = "#fff";
+      g.font = "700 132px Helvetica, 'Helvetica Neue', Arial, sans-serif";
+      g.textAlign = "center";
+      g.textBaseline = "middle";
+      g.fillText("GREM", W * 0.5, H * 0.32);
+      g.fillText("PEAK", W * 0.5, H * 0.74);
+
+      const data = g.getImageData(0, 0, W, H).data;
+      const ink = (x, y) => {
+        if (x < 0 || y < 0 || x >= W || y >= H) return false;
+        return data[(y * W + x) * 4] > 200;
+      };
+      const step = 2;
+      const edges = [];
+      for (let y = 1; y < H - 1; y += step) {
+        for (let x = 1; x < W - 1; x += step) {
+          if (!ink(x, y)) continue;
+          // edge of letterform
+          if (!ink(x - step, y) || !ink(x + step, y) || !ink(x, y - step) || !ink(x, y + step)) {
+            edges.push({ x, y, used: false });
+          }
+        }
+      }
+      if (!edges.length) return [new THREE.Vector3(0, 8, 0)];
+
+      // write each line L→R by chaining nearest edges (GREM then PEAK)
+      const ordered = [];
+      for (const [y0, y1] of [[0, H * 0.52], [H * 0.52, H]]) {
+        const pool = edges.filter((p) => p.y >= y0 && p.y < y1 && !p.used);
+        if (!pool.length) continue;
+        let cur = pool.reduce((a, b) => (a.x + a.y * 0.15 < b.x + b.y * 0.15 ? a : b));
+        cur.used = true;
+        ordered.push(cur);
+        for (;;) {
+          let next = null;
+          let best = 40;
+          for (const p of pool) {
+            if (p.used) continue;
+            const d = Math.hypot(p.x - cur.x, p.y - cur.y);
+            if (d < best) {
+              best = d;
+              next = p;
+            }
+          }
+          if (!next) {
+            // jump to next unused leftmost
+            const rest = pool.filter((p) => !p.used);
+            if (!rest.length) break;
+            next = rest.reduce((a, b) => (a.x + a.y * 0.2 < b.x + b.y * 0.2 ? a : b));
+          }
+          next.used = true;
+          ordered.push(next);
+          cur = next;
+        }
+      }
+
+      const worldW = 58;
+      const worldH = 32;
+      return ordered.map((p) => new THREE.Vector3(
+        (p.x / W - 0.5) * worldW,
+        (0.55 - p.y / H) * worldH + 11,
+        0
+      ));
+    }
+
+    function setActiveCurve(kind) {
+      if (kind === "text") {
+        phase = "text";
+        curve = textCurve;
+        liquidMesh = textMesh;
+        tubularSegs = textTubular;
+        hikeMesh.visible = false;
+        textMesh.visible = true;
+        if (textGround) textGround.visible = true;
+        if (groundMesh) groundMesh.visible = false;
+        progress = 0;
+        target = 0;
+        textProgress = 0;
+        lastProgress = 0;
+        beginHikeAt = 0;
+        textExit = 0;
+        climbStarted = false;
+        climbTempoLive = false;
+        climbTempoLocked = false;
+        climbLockedRate = 1;
+        climbOutro = false;
+        climbEaseActive = false;
+        climbEaseFrom = 1;
+        climbEaseT = 0;
+        try {
+          if (climbAudio) {
+            climbAudio.volume = 1;
+            climbAudio.loop = false;
+          }
+        } catch (_) { /* ignore */ }
+        textMesh.position.set(0, 0, 0);
+        if (textGround) textGround.position.set(0, 2, 0);
+        liquidMesh.geometry.setDrawRange(0, 6);
+        markers.forEach((m) => { m.mesh.visible = false; });
+        // fixed hero camera on the wordmark
+        camPos.set(0, 12, 36);
+        look.set(0, 11, 0);
+        camera.position.copy(camPos);
+        camera.lookAt(look);
+        groundY = 2;
+        applyChromeLook();
+      } else {
+        phase = "hike";
+        curve = hikeCurve;
+        liquidMesh = hikeMesh;
+        tubularSegs = hikeTubular;
+        // PEAK GREM stays briefly, then slides off left as trail takes over
+        textMesh.visible = true;
+        hikeMesh.visible = true;
+        if (textGround) textGround.visible = true;
+        if (groundMesh) groundMesh.visible = true;
+        progress = 0;
+        target = 0;
+        lastProgress = 0;
+        textExit = 0;
+        finale = false;
+        finaleT = 0;
+        applyChromeLook();
+        shotPhase = "idle";
+        shotIndex = -1;
+        liquidMesh.geometry.setDrawRange(0, 6);
+        groundY = groundMesh.position.y;
+        // pick trail camera side; ease from wordmark cam (no hard cut)
+        const p0 = hikeCurve.getPointAt(0.001);
+        const t0 = hikeCurve.getTangentAt(0.001).normalize();
+        const side = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), t0).normalize();
+        if (side.lengthSq() < 1e-6) side.set(1, 0, 0);
+        hikeSideSign = side.x > 0 ? -1 : 1;
+        hikeAutoPour = true;
+      }
+      if (pourTip) pourTip.visible = true;
+      if (pourStream) pourStream.visible = true;
+      resize();
+    }
+
+    function startTextPhase() {
+      setActiveCurve("text");
+      // song kicks in shortly after click-in, from 1.5s in the track
+      setTimeout(() => {
+        if (isLive && !experiencePaused) startClimbAudio();
+      }, CLIMB_START_DELAY * 1000);
+    }
+
+    function shotOverlayVisible() {
+      return (
+        phase === "hike" &&
+        (shotPhase === "playing" || shotPhase === "fadingOut")
+      );
+    }
+
+    function activeShotTrail() {
+      if (!shotOverlayVisible() || shotIndex < 0) return null;
+      return meetings[shotIndex]?.trail === "behind" ? "behind" : "front";
+    }
+
+    function applyTrailLayer(trail) {
+      if (!stageEl) return;
+      stageEl.classList.toggle("trail-behind", trail === "behind");
+    }
+
+    /** Pin #shotHud frame to the active media box so red subs sit on the asset. */
+    function syncShotHud(m) {
+      if (!shotHud || !shotHudFrame || !stageEl || !m) return;
+      const media = m.img || m.video;
+      if (!media) return;
+      const stageR = stageEl.getBoundingClientRect();
+      const r = media.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) return;
+      shotHudFrame.style.left = `${r.left - stageR.left}px`;
+      shotHudFrame.style.top = `${r.top - stageR.top}px`;
+      shotHudFrame.style.width = `${r.width}px`;
+      shotHudFrame.style.height = `${r.height}px`;
+    }
+
+    function hideAllShots() {
+      meetings.forEach((m) => {
+        m.el.classList.remove("on");
+        pauseShotMedia(m);
+      });
+      if (shotHud) {
+        shotHud.classList.remove("on");
+        shotHud.setAttribute("aria-hidden", "true");
+      }
+      applyTrailLayer(null);
+      shotFadeThen = null;
+    }
+
+    // Map playlist time → GPX pour 0…1 (equal slice per overlay — stable, finishes with last shot)
+    function pourProgressFromPlaylist() {
+      if (!meetings.length) return 0;
+      if (finale || shotPhase === "done") return 1;
+      if (shotIndex < 0 || shotPhase === "idle" || shotPhase === "waitFirst") return 0;
+      if (shotPhase === "fadingOut" && shotFadeThen === "finale") return 1;
+
+      const n = meetings.length;
+      if (shotPhase === "gap" || shotPhase === "fadingOut") {
+        // hold at end of this shot's slice during fade / gap
+        return clamp((shotIndex + 1) / n, 0, 0.999);
+      }
+
+      const m = meetings[shotIndex];
+      const dur = shotDuration(m);
+      const u = clamp(shotTime(m) / dur, 0, 1);
+      return clamp((shotIndex + u) / n, 0, 0.999);
+    }
+
+    function updateShotSub(m) {
+      if (!m) return;
+      // COROS ele / BPM at the clip's hike time (+ playhead)
+      const t = m.startMs + shotTime(m) * 1000;
+      const s = samplePathAtTime(t);
+      const line = formatSub(s?.ele ?? m.ele, s?.hr ?? m.hr, { end: !!m.subEnd });
+      if (m.sub) m.sub.textContent = line;
+      if (shotSub) shotSub.textContent = line;
+    }
+
+    function showShot(i) {
+      if (i < 0 || i >= meetings.length) {
+        shotPhase = "done";
+        shotIndex = Math.max(0, meetings.length - 1);
+        hideAllShots();
+        return;
+      }
+      shotIndex = i;
+      shotPhase = "playing";
+      // BPM tempo drive begins with the first overlay (song already playing from PEAK)
+      if (i === 0) climbTempoLive = true;
+      // last overlay — gap ease should already be done; settle on original 1× (no slide)
+      if (i === meetings.length - 1 || meetings[i]?.subEnd) {
+        restoreClimbNormalPace();
+      }
+      applyTrailLayer(meetings[i]?.trail);
+      if (shotHud) {
+        shotHud.classList.add("on");
+        shotHud.setAttribute("aria-hidden", "false");
+      }
+      meetings.forEach((m, idx) => {
+        const on = idx === i;
+        m.el.classList.toggle("on", on);
+        if (on) {
+          if (m.kind === "still") {
+            resetShotMedia(m);
+            updateShotSub(m);
+            syncShotHud(m);
+            // layout after image decode / paint
+            requestAnimationFrame(() => syncShotHud(m));
+            return;
+          }
+          m.video.loop = false;
+          const start = () => {
+            updateShotSub(m);
+            syncShotHud(m);
+            requestAnimationFrame(() => syncShotHud(m));
+            const p = m.video.play();
+            if (p && p.catch) {
+              p.catch(() => {
+                setTimeout(() => {
+                  if (shotIndex === idx && shotPhase === "playing") onShotEnded();
+                }, 600);
+              });
+            }
+          };
+          if (m.video.readyState >= 2) {
+            resetShotMedia(m);
+            start();
+          } else {
+            const onReady = () => {
+              resetShotMedia(m);
+              start();
+            };
+            m.video.addEventListener("loadeddata", onReady, { once: true });
+            // safety: if metadata never arrives, skip
+            setTimeout(() => {
+              if (shotIndex === idx && shotPhase === "playing" && m.video.readyState < 2) {
+                onShotEnded();
+              }
+            }, 8000);
+          }
+        } else {
+          pauseShotMedia(m);
+        }
       });
     }
 
-    function layoutPourPoints() {
-      // Remap GPX → left→right pour that starts high and falls with gravity
-      const n = path.length;
-      const pts = [];
-      for (let i = 0; i < n; i++) {
-        const t = i / Math.max(1, n - 1);
-        const p = path[i];
-        const x = t * POUR_SPAN;
-        // begin high on the left, pour down; elevation adds soft hills later
-        const y =
-          72 -
-          t * 42 +
-          (p.eleN - 0.5) * 16 +
-          Math.sin(t * Math.PI * 2.2) * 2.4 +
-          Math.sin(t * Math.PI * 6.5) * 1.0;
-        // keep nearly flat in Z so L→R + gravity read clearly
-        const z = Math.sin(t * Math.PI * 2.0) * 1.8;
-        pts.push(new THREE.Vector3(x, y, z));
+    function revealFullTrail() {
+      progress = 1;
+      target = 1;
+      if (hikeMesh && radialSegs) {
+        const idxCount = hikeMesh.geometry.index ? hikeMesh.geometry.index.count : 0;
+        hikeMesh.geometry.setDrawRange(0, idxCount || (hikeTubular * radialSegs * 6));
       }
-      return pts;
+    }
+
+    function applyFinaleCaptionStep() {
+      finaleLine1?.classList.toggle("on", finaleCaptionStep >= 1);
+      finaleLine2?.classList.toggle("on", finaleCaptionStep >= 2);
+      if (finaleLabel) {
+        const show = finale && finaleCaptionStep >= 1;
+        finaleLabel.classList.toggle("on", show);
+        finaleLabel.setAttribute("aria-hidden", show ? "false" : "true");
+      }
+    }
+
+    function syncFinaleLabel() {
+      if (!finaleLabel || !finale || !stageEl) {
+        if (finaleLabel) {
+          finaleLabel.classList.remove("on");
+          finaleLabel.setAttribute("aria-hidden", "true");
+        }
+        finaleLine1?.classList.remove("on");
+        finaleLine2?.classList.remove("on");
+        return;
+      }
+      const w = stageEl.clientWidth;
+      const h = stageEl.clientHeight;
+      _tmp.copy(trailPeak);
+      _tmp.project(camera);
+      if (_tmp.z > 1) return;
+      const x = (_tmp.x * 0.5 + 0.5) * w;
+      const y = (-_tmp.y * 0.5 + 0.5) * h;
+      finaleLabel.style.left = `${x}px`;
+      finaleLabel.style.top = `${y}px`;
+      applyFinaleCaptionStep();
+    }
+
+    function tickFinaleCaption(dt) {
+      if (!finale || finaleCaptionStep >= 2) return;
+      finaleCaptionTimer -= dt * 1000;
+      if (finaleCaptionTimer > 0) return;
+      finaleCaptionStep += 1;
+      applyFinaleCaptionStep();
+      syncFinaleLabel();
+      if (finaleCaptionStep < 2) {
+        finaleCaptionTimer = 2000; // with love x — 2s after LAGAZUOI
+      }
+    }
+
+    function beginFinale() {
+      if (finale || phase !== "hike") return;
+      finale = true;
+      finaleT = 0;
+      hikeAutoPour = false;
+      shotPhase = "done";
+      hideAllShots();
+      revealFullTrail();
+      try { if (climbAudio) climbAudio.loop = false; } catch (_) { /* ignore */ }
+      if (pourTip) pourTip.visible = false;
+      if (pourStream) pourStream.visible = false;
+      // no ground shadow on the final map beat
+      if (groundMesh) groundMesh.visible = false;
+      if (hikeMesh) hikeMesh.castShadow = false;
+      markers.forEach((m) => { m.mesh.castShadow = false; });
+      clearDrips();
+      applyChromeLook();
+      // seed camera centred above the route (~10% larger than prior finale fit)
+      const height = trailSpanXZ * 1.665;
+      camPos.set(trailCenter.x, trailCenter.y + height, trailCenter.z);
+      look.copy(trailCenter);
+      camera.position.copy(camPos);
+      camera.lookAt(look);
+      resize();
+      // map alone first; LAGAZUOI at 2s, with love x 2s after that
+      finaleCaptionStep = 0;
+      finaleCaptionTimer = 2000;
+      applyFinaleCaptionStep();
+      syncFinaleLabel();
+      // fade out after the verse (or immediately if already past the cut)
+      watchClimbMapCut();
+    }
+
+    function beginOverlayFadeOut(then) {
+      const active = meetings[shotIndex];
+      // leaving the late still — freeze song at whatever pace it reached
+      if (active?.lockTempoAfter && !climbTempoLocked) {
+        lockClimbTempoAtCurrent();
+      }
+      if (active) {
+        active.el.classList.remove("on");
+        pauseShotMedia(active);
+      }
+      if (shotHud) {
+        shotHud.classList.remove("on");
+        shotHud.setAttribute("aria-hidden", "true");
+      }
+      shotFadeThen = then;
+      shotPhase = "fadingOut";
+      shotTimer = SHOT_FADE_MS;
+    }
+
+    function onShotEnded() {
+      if (phase !== "hike" || shotPhase !== "playing") return;
+      const active = meetings[shotIndex];
+      if (active) pauseShotMedia(active);
+      beginOverlayFadeOut(
+        shotIndex + 1 >= meetings.length ? "finale" : "gap"
+      );
+    }
+
+    function goToGap() {
+      shotPhase = "gap";
+      // clear trail layer so the empty gap stays metal-only (no z-index flash)
+      applyTrailLayer(null);
+      // next is the last overlay — hold ~2s longer before it arrives
+      const nextIsLast = shotIndex + 1 === meetings.length - 1;
+      shotTimer = SHOT_GAP_MS + (nextIsLast ? SHOT_LAST_EXTRA_GAP_MS : 0);
+      // empty black only: ease tempo/pitch back so the last image lands at original 1×
+      if (nextIsLast) beginClimbNormalEaseNow(shotTimer / 1000);
+    }
+
+    function tickShots(dt) {
+      if (phase !== "hike" || shotPhase === "done" || shotPhase === "idle" || finale) return;
+
+      if (shotPhase === "waitFirst") {
+        shotTimer -= dt * 1000;
+        if (shotTimer <= 0) showShot(0);
+        return;
+      }
+
+      if (shotPhase === "fadingOut") {
+        shotTimer -= dt * 1000;
+        if (shotTimer > 0) return;
+        const then = shotFadeThen;
+        shotFadeThen = null;
+        if (then === "finale") {
+          shotPhase = "done";
+          revealFullTrail();
+          beginFinale();
+          return;
+        }
+        goToGap();
+        return;
+      }
+
+      if (shotPhase === "playing" && shotIndex >= 0) {
+        const m = meetings[shotIndex];
+        if (!m) return;
+        if (m.kind === "still") m.stillT = (m.stillT || 0) + dt;
+        updateShotSub(m);
+        syncShotHud(m);
+        const dur = shotDuration(m);
+        const tVid = shotTime(m);
+        const nearEnd =
+          (m.kind === "video" && m.video?.ended) ||
+          (dur > 0 && isFinite(dur) && tVid >= dur - 0.08);
+        if (nearEnd) onShotEnded();
+        return;
+      }
+      if (shotPhase === "gap") {
+        shotTimer -= dt * 1000;
+        if (shotTimer <= 0) showShot(shotIndex + 1);
+      }
+    }
+
+    function startHikePhase() {
+      setActiveCurve("hike");
+      shotPhase = "waitFirst";
+      shotIndex = -1;
+      shotTimer = 420;
     }
 
     function spawnDrip(origin, force = 1) {
@@ -746,34 +1983,63 @@
         scene.remove(old.mesh);
         old.mesh.geometry.dispose();
       }
-      const s = 0.12 + Math.random() * 0.38 * force;
-      const geo = new THREE.SphereGeometry(s, 14, 12);
+      const s = 0.06 + Math.random() * 0.14 * force;
+      const geo = new THREE.SphereGeometry(s, 12, 10);
       // stretch into a tear while falling
       const mesh = new THREE.Mesh(geo, silverMat);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       mesh.position.copy(origin);
-      mesh.position.x += (Math.random() - 0.5) * 0.6;
-      mesh.position.z += (Math.random() - 0.5) * 0.6;
-      mesh.position.y += 0.2 + Math.random() * 0.8;
-      mesh.scale.set(1, 1.35 + Math.random() * 0.8, 1);
+      mesh.position.x += (Math.random() - 0.5) * 0.28;
+      mesh.position.z += (Math.random() - 0.5) * 0.28;
+      mesh.position.y += 0.1 + Math.random() * 0.35;
+      mesh.scale.set(1, 1.15 + Math.random() * 0.35, 1);
       scene.add(mesh);
       drips.push({
         mesh,
         vel: new THREE.Vector3(
-          1.2 * force + (Math.random() - 0.3) * 1.5, // carry right with the pour
-          -4 - Math.random() * 6 * force,            // hard fall
-          (Math.random() - 0.5) * 1.4
+          (Math.random() - 0.5) * 0.7,
+          -2.4 - Math.random() * 2.6 * force,
+          (Math.random() - 0.5) * 0.7
         ),
-        life: 2.8 + Math.random() * 2.2,
+        life: 1.4 + Math.random() * 1.1,
         age: 0,
         radius: s,
         settled: false,
+        spread: 0,
+        baseScale: { x: 1, y: 1, z: 1 },
       });
     }
 
+    function spawnDripAlongHike(origin, tangent, force = 1) {
+      spawnDrip(origin, force);
+      const d = drips[drips.length - 1];
+      if (!d || !tangent) return;
+      // carry droplets forward along the trail
+      d.vel.addScaledVector(tangent, 0.9 * force + Math.random() * 0.5);
+      d.vel.y = -2.4 - Math.random() * 2.6 * force;
+    }
+
+    function clearDrips() {
+      for (let i = drips.length - 1; i >= 0; i--) {
+        scene.remove(drips[i].mesh);
+        drips[i].mesh.geometry.dispose();
+      }
+      drips.length = 0;
+    }
+
     function updatePour(dt) {
-      if (!curve || !liquidMesh) return;
+      if (!curve || !liquidMesh || phase === "intro") return;
+
+      // finale map: full clean route, no drip particles
+      if (finale) {
+        const idxCount = liquidMesh.geometry.index ? liquidMesh.geometry.index.count : 0;
+        liquidMesh.geometry.setDrawRange(0, idxCount || (tubularSegs * radialSegs * 6));
+        if (pourTip) pourTip.visible = false;
+        if (pourStream) pourStream.visible = false;
+        if (drips.length) clearDrips();
+        return;
+      }
 
       const u = clamp(progress, 0.001, 0.999);
       // reveal trail as if poured up to here
@@ -783,49 +2049,92 @@
       curve.getPointAt(u, _tip);
       const tan = curve.getTangentAt(u).normalize();
 
-      // keep soft contact shadows glued to the pour tip
-      sun.position.set(_tip.x + 55, _tip.y + 110, _tip.z + 40);
+      // soft contact shadows under the pour tip — keep frustum locked on trail
+      sun.position.set(_tip.x + 45, _tip.y + 110, _tip.z + 55);
       sun.target.position.copy(_tip);
       sun.target.updateMatrixWorld();
+      glint.position.set(_tip.x - 35, _tip.y + 95, _tip.z - 50);
+      glint.target.position.copy(_tip);
+      glint.target.updateMatrixWorld();
+      const sc = sun.shadow.camera;
+      const extent = phase === "text" ? 55 : 95;
+      sc.left = -extent;
+      sc.right = extent;
+      sc.top = extent;
+      sc.bottom = -extent;
+      sc.near = 1;
+      sc.far = 520;
+      sc.updateProjectionMatrix();
+      sun.shadow.camera.updateMatrixWorld();
 
       if (pourTip) {
         pourTip.position.copy(_tip);
-        pourTip.position.y += 0.55;
-        const pulse = 0.9 + Math.sin(performance.now() * 0.014) * 0.25;
-        pourTip.scale.set(pulse * 1.1, pulse * 0.85, pulse * 1.1);
+        pourTip.position.y += 0.25;
+        const pulse = 0.9 + Math.sin(performance.now() * 0.014) * 0.2;
+        const hrSize = phase === "hike" ? lerp(0.85, 1.25, hrViz) : 1;
+        pourTip.scale.setScalar(pulse * (phase === "text" ? 0.85 : 1) * hrSize);
       }
       if (pourStream) {
-        // long drip hanging straight down from tip
-        pourStream.position.copy(_tip);
-        pourStream.position.y -= 1.1;
-        const flow = 1.2 + Math.min(3.2, Math.abs(progress - lastProgress) * 160);
-        pourStream.scale.set(0.55, flow * 2.8, 0.55);
+        pourStream.position.copy(_tip).addScaledVector(tan, -0.65);
+        pourStream.position.y -= 0.25;
+        const flow = 1 + Math.min(2.4, Math.abs(progress - lastProgress) * 140);
+        const hrW = phase === "hike" ? lerp(0.85, 1.2, hrViz) : 1;
+        pourStream.scale.set(0.5 * hrW, 0.5 * hrW, flow * 1.6);
+        pourStream.lookAt(_tip.x + tan.x, _tip.y + tan.y, _tip.z + tan.z);
       }
 
-      // spawn drips when moving forward (pouring)
+      // spawn drips while pouring / writing — GREM PEAK + trail leave expanding puddles
       const dProg = progress - lastProgress;
+      const dripMul = phase === "text" ? 0.55 : 0.85;
       if (dProg > 0.00001) {
-        pourCarry += dProg * (reduced ? 80 : 420);
+        pourCarry += dProg * (reduced ? 18 : (phase === "text" ? 140 : 210)) * dripMul;
         while (pourCarry > 1) {
           pourCarry -= 1;
           _tmp.copy(_tip).addScaledVector(tan, -0.2);
-          _tmp.y += 0.6;
-          spawnDrip(_tmp, 0.9 + Math.min(1.8, dProg * 500));
+          _tmp.y += 0.35;
+          // occasional side drip so puddles mark the path, not only the tip
+          if (phase === "hike" && Math.random() < 0.45) {
+            _tmp.addScaledVector(tan, (Math.random() - 0.5) * 1.2);
+            _tmp.x += (Math.random() - 0.5) * 1.8;
+            _tmp.z += (Math.random() - 0.5) * 1.8;
+          }
+          spawnDripAlongHike(_tmp, tan, 0.4 + Math.min(0.75, dProg * 160));
         }
-        if (Math.random() < dProg * 14) spawnDrip(_tip, 1.6);
-      } else if (!reduced && Math.random() < 0.03) {
-        spawnDrip(_tip, 0.55);
+        if (Math.random() < dProg * (phase === "text" ? 5.5 : 6.5) * dripMul) {
+          spawnDripAlongHike(_tip, tan, phase === "text" ? 0.65 : 0.7);
+        }
+      } else if (!reduced && phase === "hike" && Math.random() < 0.035) {
+        // keep a light drip rain along the tip during overlay gaps / holds
+        _tmp.copy(_tip);
+        _tmp.x += (Math.random() - 0.5) * 2.2;
+        _tmp.z += (Math.random() - 0.5) * 2.2;
+        spawnDripAlongHike(_tmp, tan, 0.4);
       }
       lastProgress = progress;
 
-      // integrate drips
+      // integrate drips — landed puddles stay visible and keep casting shadow
       for (let i = drips.length - 1; i >= 0; i--) {
         const d = drips[i];
         d.age += dt;
         if (d.settled) {
           d.life -= dt;
-          d.mesh.scale.multiplyScalar(0.985);
-          if (d.life <= 0 || d.mesh.scale.x < 0.08) {
+          d.spread = Math.min(1, (d.spread || 0) + dt * 2.4);
+          // ease-out expand across the floor
+          const spreadK = 1 - Math.pow(1 - d.spread, 2.4);
+          let sx = d.baseScale.x * (0.35 + 0.65 * spreadK);
+          let sy = d.baseScale.y;
+          let sz = d.baseScale.z * (0.35 + 0.65 * spreadK);
+          d.mesh.position.y = groundY + d.radius * 0.1;
+          d.mesh.castShadow = true;
+          // hold size, then ease out near the end
+          if (d.life < 1.2) {
+            const k = Math.max(0.12, d.life / 1.2);
+            sx *= k;
+            sy *= k;
+            sz *= k;
+          }
+          d.mesh.scale.set(sx, sy, sz);
+          if (d.life <= 0) {
             scene.remove(d.mesh);
             d.mesh.geometry.dispose();
             drips.splice(i, 1);
@@ -842,14 +2151,21 @@
         const stretch = 1 + Math.min(1.8, Math.abs(d.vel.y) * 0.06);
         d.mesh.scale.set(1 / Math.sqrt(stretch), stretch, 1 / Math.sqrt(stretch));
 
-        // hit ground → splat into a flat mercury puddle with a lingering shadow blob
+        // hit ground → flat mercury that spreads out on the floor / trail
         if (d.mesh.position.y - d.radius * 0.5 <= groundY) {
-          d.mesh.position.y = groundY + d.radius * 0.12;
-          d.vel.set(d.vel.x * 0.25, 0, d.vel.z * 0.25);
-          d.mesh.scale.set(2.2 + Math.random() * 1.2, 0.22, 2.2 + Math.random() * 1.2);
+          const hike = phase === "hike";
+          const sx = (hike ? 3.2 : 2.6) + Math.random() * (hike ? 2.8 : 2.2);
+          const sy = 0.16;
+          const sz = (hike ? 3.2 : 2.6) + Math.random() * (hike ? 2.8 : 2.2);
+          d.mesh.position.y = groundY + d.radius * 0.1;
+          d.vel.set(0, 0, 0);
+          d.mesh.scale.set(sx * 0.35, sy, sz * 0.35);
+          d.baseScale = { x: sx, y: sy, z: sz };
+          d.spread = 0; // 0→1 expand on floor
           d.settled = true;
-          d.life = 2.4 + Math.random() * 2.0;
-        } else if (d.age > 5) {
+          d.life = (hike ? 6.5 : 3.8) + Math.random() * (hike ? 3.5 : 2.2);
+          d.mesh.castShadow = true;
+        } else if (d.age > 4) {
           scene.remove(d.mesh);
           d.mesh.geometry.dispose();
           drips.splice(i, 1);
@@ -858,55 +2174,109 @@
     }
 
     function buildTrail() {
-      const points = layoutPourPoints();
-      curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.18);
-
-      tubularSegs = Math.min(1200, Math.max(560, points.length * 3));
-      radialSegs = 56;
-      const geo = makeLiquidTube(curve, tubularSegs, radialSegs);
-
       silverMat = makeChromeMaterial();
-      liquidMesh = new THREE.Mesh(geo, silverMat);
-      liquidMesh.castShadow = true;
-      liquidMesh.receiveShadow = true;
-      liquidMesh.geometry.setDrawRange(0, 6);
-      scene.add(liquidMesh);
+      radialSegs = 40;
 
-      let minY = Infinity;
-      for (const p of points) minY = Math.min(minY, p.y);
-      groundY = minY - 4;
+      // --- GREM PEAK wordmark pour ---
+      const textPts = layoutTextPoints();
+      textCurve = new THREE.CatmullRomCurve3(textPts, false, "catmullrom", 0.05);
+      textTubular = Math.min(1400, Math.max(600, textPts.length));
+      textMesh = new THREE.Mesh(makeLiquidTube(textCurve, textTubular, radialSegs, { forLetters: true }), silverMat);
+      textMesh.castShadow = true;
+      textMesh.receiveShadow = true;
+      textMesh.visible = false;
+      textMesh.geometry.setDrawRange(0, 6);
+      scene.add(textMesh);
 
-      // invisible shadow catcher — video stays visible underneath
-      groundMat = new THREE.ShadowMaterial({ opacity: 0.45 });
-      groundMesh = new THREE.Mesh(new THREE.PlaneGeometry(POUR_SPAN * 1.6, 120), groundMat);
+      // shadow catcher under the wordmark (the drip shadows you like)
+      textGround = new THREE.Mesh(
+        new THREE.PlaneGeometry(70, 40),
+        new THREE.ShadowMaterial({ opacity: 0.55, color: 0x000000 })
+      );
+      textGround.rotation.x = -Math.PI / 2;
+      textGround.position.set(0, 2, 0);
+      textGround.receiveShadow = true;
+      textGround.visible = false;
+      scene.add(textGround);
+
+      // --- GPX hike pour ---
+      const hikePts = layoutHikePoints();
+      const trailSunlit = computeTrailSunlit(hikePts);
+      // slightly tensioned curve so switchbacks stay sharp like the map
+      hikeCurve = new THREE.CatmullRomCurve3(hikePts, false, "catmullrom", 0.05);
+      hikeTubular = Math.min(1600, Math.max(800, hikePts.length * 4));
+      hikeMesh = new THREE.Mesh(
+        makeLiquidTube(hikeCurve, hikeTubular, radialSegs, {
+          sunlitSamples: trailSunlit,
+          faithful: true,
+        }),
+        silverMat
+      );
+      hikeMesh.castShadow = true;
+      hikeMesh.receiveShadow = true;
+      hikeMesh.visible = false;
+      hikeMesh.geometry.setDrawRange(0, 6);
+      scene.add(hikeMesh);
+
+      let minY = Infinity, maxY = -Infinity;
+      let minX = Infinity, maxX = -Infinity;
+      let minZ = Infinity, maxZ = -Infinity;
+      for (const p of hikePts) {
+        minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+        minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+        minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z);
+      }
+      // keep ground close under the trail so contact shadows + landed drips stay in frame
+      groundY = minY - 2.4;
+      const span = Math.max(maxX - minX, maxZ - minZ, 80) * 1.75;
+      trailCenter.set((minX + maxX) * 0.5, (minY + maxY) * 0.45, (minZ + maxZ) * 0.5);
+      trailSpan = Math.max(maxX - minX, maxZ - minZ, maxY - minY, 48);
+      trailSpanXZ = Math.max(maxX - minX, maxZ - minZ, 48);
+      // highest end of the route (for finale caption)
+      let peak = hikePts[0];
+      for (let i = 1; i < hikePts.length; i++) {
+        if (hikePts[i].y > peak.y) peak = hikePts[i];
+      }
+      trailPeak.copy(peak);
+
+      groundMat = new THREE.ShadowMaterial({ opacity: 0.62, color: 0x000000 });
+      groundMesh = new THREE.Mesh(new THREE.CircleGeometry(span, 80), groundMat);
       groundMesh.rotation.x = -Math.PI / 2;
-      groundMesh.position.set(POUR_SPAN * 0.5, groundY, 0);
+      groundMesh.position.set((minX + maxX) * 0.5, groundY, (minZ + maxZ) * 0.5);
       groundMesh.receiveShadow = true;
+      groundMesh.visible = false;
       scene.add(groundMesh);
 
-      // pour tip + hanging stream (starts high, drips down)
-      pourTip = new THREE.Mesh(new THREE.SphereGeometry(0.48, 28, 24), silverMat);
+      pourTip = new THREE.Mesh(new THREE.SphereGeometry(0.42, 28, 24), silverMat);
       pourTip.castShadow = true;
+      pourTip.visible = false;
       scene.add(pourTip);
-      pourStream = new THREE.Mesh(new THREE.SphereGeometry(0.16, 18, 14), silverMat);
+      pourStream = new THREE.Mesh(new THREE.SphereGeometry(0.14, 18, 14), silverMat);
       pourStream.castShadow = true;
+      pourStream.visible = false;
       scene.add(pourStream);
 
-      sun.target.position.set(POUR_SPAN * 0.5, 20, 0);
+      sun.target.position.set(0, 10, 0);
       scene.add(sun.target);
+
+      // default inactive until text/hike phase
+      curve = textCurve;
+      liquidMesh = textMesh;
+      tubularSegs = textTubular;
 
       markers = assets.map((a) => {
         const u = clamp(a.progress, 0.001, 0.999);
-        const pt = curve.getPointAt(u);
+        const pt = hikeCurve.getPointAt(u);
         const mesh = new THREE.Mesh(
-          new THREE.SphereGeometry(0.55 + Math.random() * 0.55, 24, 20),
+          new THREE.SphereGeometry(0.55 + Math.random() * 0.45, 24, 20),
           silverMat
         );
         mesh.castShadow = true;
         mesh.receiveShadow = true;
+        mesh.visible = false;
         mesh.position.copy(pt);
-        mesh.position.y -= 0.2;
-        mesh.scale.set(1.25, 0.65, 1.25);
+        mesh.position.y += 0.35;
+        mesh.scale.set(1.1, 0.75, 1.1);
         scene.add(mesh);
         return { mesh, progress: a.progress };
       });
@@ -914,28 +2284,97 @@
 
     function updateCamera() {
       if (!curve) return;
+
+      if (phase === "text") {
+        // hold centre on the wordmark while it writes
+        const desiredPos = new THREE.Vector3(0, 14, 42);
+        const desiredLook = new THREE.Vector3(0, 10, 0);
+        camPos.lerp(desiredPos, reduced ? 1 : 0.06);
+        look.lerp(desiredLook, reduced ? 1 : 0.06);
+        camera.position.copy(camPos);
+        camera.lookAt(look);
+        return;
+      }
+
+      if (phase !== "hike") return;
+
+      // after last overlay — centred metal map, soft idle, no shadow
+      if (finale) {
+        const fit = trailSpanXZ * 0.828; // ~10% larger on screen vs prior 0.92
+        const fovRad = THREE.MathUtils.degToRad(camera.fov);
+        const height =
+          (fit / Math.tan(fovRad * 0.5)) * 1.05 +
+          Math.sin(finaleT * 0.32) * 1.2;
+        // gentle orbit kept small so the map stays optically centered
+        const desiredPos = new THREE.Vector3(
+          trailCenter.x + Math.sin(finaleT * 0.14) * 0.55,
+          trailCenter.y + height,
+          trailCenter.z + Math.cos(finaleT * 0.12) * 0.55
+        );
+        const desiredLook = new THREE.Vector3(
+          trailCenter.x,
+          trailCenter.y + trailSpan * 0.04,
+          trailCenter.z
+        );
+        const ease = reduced ? 1 : 0.045;
+        camPos.lerp(desiredPos, ease);
+        look.lerp(desiredLook, ease);
+        camera.position.copy(camPos);
+        camera.lookAt(look);
+        markers.forEach((m) => {
+          m.mesh.visible = true;
+          m.mesh.castShadow = false;
+          m.mesh.scale.set(0.95, 0.65, 0.95);
+        });
+        syncFinaleLabel();
+        return;
+      }
+
       const u = clamp(progress, 0.001, 0.999);
       const p = curve.getPointAt(u);
+      const t = curve.getTangentAt(u).normalize();
+      const up = new THREE.Vector3(0, 1, 0);
+      const side = new THREE.Vector3().crossVectors(up, t).normalize();
+      if (side.lengthSq() < 1e-6) side.set(1, 0, 0);
 
       const here = samplePath(progress);
       speedN = here?.spdN ?? 0;
 
-      // framed L→R: tip mid-left, stream falling down + running right
-      const desiredPos = new THREE.Vector3(p.x + 18, p.y + 6, 55);
-      const desiredLook = new THREE.Vector3(p.x + 6, p.y - 8, 0);
+      // BPM → camera: higher HR pulls in closer (trail reads bigger), lower pushes out
+      hrViz = lerp(hrViz, hrProximityN(), reduced ? 1 : 0.05);
+      const distMul = lerp(1.36, 0.56, hrViz); // far ← low BPM ····· high BPM → close
+      const markMul = lerp(0.9, 1.22, hrViz);
 
-      const ease = reduced ? 1 : 0.05;
+      // elevated route view — path shape on the left, ground/shadows/drops along the bottom
+      const poured = curve.getPointAt(clamp(u - 0.1, 0.001, 0.999));
+      const ahead = curve.getPointAt(clamp(u + 0.06, 0.001, 0.999));
+      const lateral = (52 - speedN * 6) * hikeSideSign * distMul;
+      const height = (46 + (here?.eleN ?? 0) * 10) * distMul;
+      const back = 6 * distMul;
+
+      const desiredPos = p.clone()
+        .addScaledVector(side, lateral)
+        .addScaledVector(up, height)
+        .addScaledVector(t, -back);
+      const desiredLook = poured.clone()
+        .lerp(ahead, 0.62)
+        .addScaledVector(side, 30 * hikeSideSign * Math.min(1.15, distMul))
+        .addScaledVector(up, -4);
+
+      const ease = reduced ? 1 : 0.035;
       camPos.lerp(desiredPos, ease);
       look.lerp(desiredLook, ease);
       camera.position.copy(camPos);
       camera.lookAt(look);
 
       markers.forEach((m) => {
-        const poured = m.progress <= progress + 0.01;
-        m.mesh.visible = poured;
-        if (poured) {
+        const pouredMark = m.progress <= progress + 0.01;
+        m.mesh.visible = pouredMark;
+        if (pouredMark) {
           const near = Math.abs(m.progress - progress) < 0.04;
-          m.mesh.scale.set(near ? 1.5 : 1.25, near ? 0.85 : 0.65, near ? 1.5 : 1.25);
+          const b = (near ? 1.35 : 1.1) * markMul;
+          const h = (near ? 0.9 : 0.75) * markMul;
+          m.mesh.scale.set(b, h, b);
         }
       });
     }
@@ -944,42 +2383,28 @@
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
       camera.aspect = w / Math.max(h, 1);
+      if (finale) {
+        camera.fov = 32;
+        // small left nudge — AABB center reads slightly right on this route
+        const nudge = Math.round(w * 0.045);
+        camera.setViewOffset(w, h, nudge, 0, w, h);
+      } else if (phase === "hike" && w > 640) {
+        // pin the hike route into the left third; center stays clear for media
+        camera.fov = 42;
+        const shiftX = Math.round(w * 0.3);
+        const shiftY = Math.round(h * -0.04);
+        camera.setViewOffset(w, h, shiftX, shiftY, w, h);
+      } else {
+        camera.fov = 38;
+        camera.clearViewOffset();
+      }
       camera.updateProjectionMatrix();
       renderer.setSize(w, h, false);
+      if (shotOverlayVisible() && shotIndex >= 0) syncShotHud(meetings[shotIndex]);
     }
 
     function readScroll() {
-      const max = document.documentElement.scrollWidth - innerWidth;
-      target = max > 0 ? clamp(scrollX / max, 0, 1) : 0;
-    }
-
-    function syncMeetings() {
-      // long sticky holds — each clip owns a wide band of the journey
-      let active = -1;
-      let best = Infinity;
-      assets.forEach((a, i) => {
-        const d = Math.abs(progress - a.progress);
-        if (d < 0.07 && d < best) {
-          best = d;
-          active = i;
-        }
-      });
-
-      meetings.forEach((m, i) => {
-        const on = i === active;
-        m.el.classList.toggle("on", on);
-        if (on) {
-          const s = samplePath(progress);
-          const ele = Math.round(s?.ele ?? assets[i].ele);
-          const hr = s?.hr ?? assets[i].hr;
-          m.sub.textContent = hr != null
-            ? `${ele.toLocaleString("en-GB")} M   ·   ${hr} BPM`
-            : `${ele.toLocaleString("en-GB")} M`;
-          if (m.video.paused) m.video.play().catch(() => {});
-        } else if (!m.video.paused) {
-          m.video.pause();
-        }
-      });
+      // pour is playlist-driven — scroll does not control the metal
     }
 
     function tick() {
@@ -987,20 +2412,73 @@
       const dt = Math.min(0.05, (now - lastT) / 1000);
       lastT = now;
 
-      if (isLive) {
-        progress = lerp(progress, target, reduced ? 1 : 0.045);
-        if (Math.abs(progress - target) < 0.00002) progress = target;
-        updatePour(dt);
-        updateCamera();
-        syncMeetings();
+      if (isLive && !experiencePaused) {
+        if (phase === "text") {
+          // auto-write GREM PEAK with dripping metal
+          const dur = reduced ? 0.2 : 11;
+          textProgress = Math.min(1, textProgress + dt / dur);
+          progress = textProgress;
+          target = textProgress;
+          updatePour(dt);
+          updateCamera();
+          if (textProgress >= 1) {
+            // continue straight into trail metal — no hold
+            startHikePhase();
+          }
+        } else if (phase === "hike") {
+          if (finale) {
+            finaleT += dt;
+            progress = 1;
+            target = 1;
+            tickFinaleCaption(dt);
+            watchClimbMapCut();
+            tickClimbOutro(dt);
+            updatePour(dt);
+            updateCamera();
+          } else {
+            tickShots(dt);
+            // metal follows the overlay playlist — each clip pours its slice of the GPX
+            target = pourProgressFromPlaylist();
+            progress = lerp(progress, target, reduced ? 1 : 0.12);
+            if (Math.abs(progress - target) < 0.00005) progress = target;
+            updatePour(dt);
+            updateCamera();
+          }
 
-        // keep chrome reflecting the live background footage
+          // once camera falls back onto the trail, slide PEAK GREM off left
+          if (textMesh?.visible) {
+            const exitDur = reduced ? 0.15 : 3.6;
+            textExit = Math.min(1, textExit + dt / exitDur);
+            const e = textExit * textExit * (3 - 2 * textExit); // smoothstep
+            textMesh.position.x = -92 * e;
+            textMesh.position.y = -6 * e;
+            if (textGround) {
+              textGround.position.x = -92 * e;
+              textGround.position.y = 2 - 6 * e;
+            }
+            if (textExit >= 1) {
+              textMesh.visible = false;
+              if (textGround) textGround.visible = false;
+            }
+          }
+        }
+
+        updateClimbTempo(dt);
+
         if (now - lastEnvRefresh > 1800 && bgVideo.readyState >= 2) {
           lastEnvRefresh = now;
           refreshVideoEnv();
         }
       }
 
+      // overlays live above #map; keep full-frame WebGL bg off during hike
+      const overlayUp = shotOverlayVisible();
+      const trailFront = overlayUp && activeShotTrail() !== "behind";
+      if (bgPlane) bgPlane.visible = phase !== "hike";
+      if (groundMesh && phase === "hike" && !finale) groundMesh.visible = !trailFront;
+      if (overlayUp && shotIndex >= 0) syncShotHud(meetings[shotIndex]);
+
+      renderer.setClearColor(0x000000, 0);
       renderer.render(scene, camera);
       requestAnimationFrame(tick);
     }
@@ -1019,27 +2497,70 @@
         bgVideo.playsInline = true;
         try { await bgVideo.play(); } catch (_) { /* autoplay may need a gesture */ }
 
+        // playlist shots (cut edits) — markers still follow these points on the trail
+        assets = SHOT_PLAYLIST.map((s) =>
+          shotMetaFromFile(s.file, s.trail, {
+            lockTempoAfter: s.lockTempoAfter,
+            subEnd: s.subEnd,
+          })
+        );
+
         buildTrail();
 
-        camPos.set(20, 60, 55);
-        look.set(8, 45, 0);
+        const start = samplePath(0);
+        if (start) {
+          // mirrored X to match layoutHikePoints
+          camPos.set(-start.x * scaleXZ + 40, start.y * scaleY + 28, start.z * scaleXZ + 36);
+          look.set(-start.x * scaleXZ, start.y * scaleY + 4, start.z * scaleXZ);
+        }
 
         assets.forEach((a) => {
           const el = document.createElement("div");
           el.className = "meeting";
-          const hr = a.hr != null ? `${a.hr} BPM` : "— BPM";
+          const subLine = formatSub(a.ele, a.hr, { end: !!a.subEnd });
+          const media =
+            a.kind === "still"
+              ? `<img src="${a.src}" alt="" decoding="async" />`
+              : `<video muted playsinline preload="auto" src="${a.src}"></video>`;
           el.innerHTML = `
             <div class="meeting-frame">
-              <video muted loop playsinline preload="auto" src="${a.src}"></video>
-              <p class="sub">${Math.round(a.ele).toLocaleString("en-GB")} M   ·   ${hr}</p>
+              ${media}
+              <p class="sub">${subLine}</p>
             </div>
           `;
           meetingsEl.appendChild(el);
+          const video = el.querySelector("video");
+          if (video) {
+            video.loop = false;
+            video.preload = "auto";
+            // only end the shot if THIS clip is the active one
+            video.addEventListener("ended", () => {
+              if (meetings[shotIndex]?.video === video && shotPhase === "playing") {
+                onShotEnded();
+              }
+            });
+          }
+          const img = el.querySelector("img");
+          if (img) {
+            img.addEventListener("load", () => {
+              if (meetings[shotIndex]?.img === img) syncShotHud(meetings[shotIndex]);
+            });
+          }
           meetings.push({
             el,
-            video: el.querySelector("video"),
+            video,
+            img,
+            kind: a.kind || "video",
+            trail: a.trail || "front",
+            lockTempoAfter: !!a.lockTempoAfter,
+            subEnd: !!a.subEnd,
+            stillDur: SHOT_STILL_DUR,
+            stillT: 0,
             sub: el.querySelector(".sub"),
             progress: a.progress,
+            startMs: a.startMs,
+            ele: a.ele,
+            hr: a.hr,
           });
         });
 
@@ -1050,20 +2571,18 @@
         addEventListener("scroll", readScroll, { passive: true });
         addEventListener("resize", resize, { passive: true });
 
-        // map wheel to slow horizontal scroll (only once live)
+        // playlist-driven — block page scroll chrome
         addEventListener("wheel", (e) => {
-          if (!isLive) {
-            e.preventDefault();
-            return;
-          }
           e.preventDefault();
-          const dx = (Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * 0.22;
-          scrollBy({ left: dx, behavior: "auto" });
         }, { passive: false });
 
+        // click anywhere to pause / resume the live experience
+        addEventListener("click", () => {
+          if (!isLive || performance.now() < pauseArmedAt) return;
+          toggleExperiencePause();
+        });
+
         requestAnimationFrame(tick);
-        // meetings wait for intro exit (setupIntro starts them)
-        if (isLive && meetings[0]) meetings[0].video.play().catch(() => {});
       } catch (err) {
         console.error(err);
         statusEl.classList.add("error");
